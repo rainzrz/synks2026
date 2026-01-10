@@ -1,9 +1,62 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './LandingPage.css';
 
 const LandingPage = ({ onNavigateToLogin }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [scrollY, setScrollY] = useState(0);
+  const [isVisible, setIsVisible] = useState({
+    features: false,
+    pricing: false
+  });
+
+  useEffect(() => {
+    // Initial loading animation
+    setTimeout(() => setIsLoading(false), 1000);
+
+    // Scroll parallax effect
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+
+      // Scroll reveal
+      const featuresSection = document.querySelector('.features-section');
+      const pricingSection = document.querySelector('.pricing-section');
+
+      if (featuresSection) {
+        const rect = featuresSection.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.75) {
+          setIsVisible(prev => ({ ...prev, features: true }));
+        }
+      }
+
+      if (pricingSection) {
+        const rect = pricingSection.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.75) {
+          setIsVisible(prev => ({ ...prev, pricing: true }));
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-content">
+          <div className="loading-logo">
+            <span className="logo-text">synks</span>
+            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginLeft: '0.5rem' }}>by Systemhaus</span>
+          </div>
+          <div className="loading-spinner"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="landing-page">
+    <div className="landing-page animate-in">
       {/* Navigation */}
       <nav className="landing-nav">
         <div className="nav-container">
@@ -23,42 +76,42 @@ const LandingPage = ({ onNavigateToLogin }) => {
       </nav>
 
       {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-badge">
+      <section className="hero-section" style={{ transform: `translateY(${scrollY * 0.5}px)` }}>
+        <div className="hero-badge slide-up" style={{ animationDelay: '0.1s' }}>
           <span className="badge-icon">✦</span>
           <span>35+ years serving the leather industry</span>
         </div>
 
-        <h1 className="hero-title">
+        <h1 className="hero-title fade-in-up" style={{ animationDelay: '0.2s' }}>
           <span className="title-line">Customer Portal for</span>
           <span className="title-line gradient-text">Antara ERP</span>
         </h1>
 
-        <p className="hero-subtitle">
+        <p className="hero-subtitle fade-in-up" style={{ animationDelay: '0.4s' }}>
           Provide your customers with a centralized and secure experience.
           <br />
           Synks organizes links, wikis, and critical resources into a single, reliable portal.
         </p>
 
-        <div className="hero-cta">
-          <button className="btn-primary gradient-btn" onClick={onNavigateToLogin}>
+        <div className="hero-cta fade-in-up" style={{ animationDelay: '0.6s' }}>
+          <button className="btn-primary gradient-btn hover-lift" onClick={onNavigateToLogin}>
             Access Portal
           </button>
-          <button className="btn-secondary" onClick={onNavigateToLogin}>
+          <button className="btn-secondary hover-lift" onClick={onNavigateToLogin}>
             Learn More
           </button>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="features-section">
+      <section id="features" className={`features-section ${isVisible.features ? 'visible' : ''}`}>
         <div className="section-header">
-          <h2>Designed for Tannery Operations</h2>
-          <p>Powerful tools built specifically for Antara ERP customers</p>
+          <h2 className="fade-in-up">Designed for Tannery Operations</h2>
+          <p className="fade-in-up" style={{ animationDelay: '0.1s' }}>Powerful tools built specifically for Antara ERP customers</p>
         </div>
 
         <div className="features-grid">
-          <div className="feature-card">
+          <div className="feature-card stagger-fade" style={{ animationDelay: '0.1s' }}>
             <div className="feature-icon gradient-1">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -69,7 +122,7 @@ const LandingPage = ({ onNavigateToLogin }) => {
             <p>Access all your Antara environments - PTA, TTA, Production, and Development from one place.</p>
           </div>
 
-          <div className="feature-card">
+          <div className="feature-card stagger-fade" style={{ animationDelay: '0.2s' }}>
             <div className="feature-icon gradient-2">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -80,7 +133,7 @@ const LandingPage = ({ onNavigateToLogin }) => {
             <p>Enterprise-grade security with GitLab LDAP integration and role-based access control.</p>
           </div>
 
-          <div className="feature-card">
+          <div className="feature-card stagger-fade" style={{ animationDelay: '0.3s' }}>
             <div className="feature-icon gradient-3">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8"/>
@@ -91,7 +144,7 @@ const LandingPage = ({ onNavigateToLogin }) => {
             <p>Find any system link instantly with powerful search across all products and environments.</p>
           </div>
 
-          <div className="feature-card">
+          <div className="feature-card stagger-fade" style={{ animationDelay: '0.4s' }}>
             <div className="feature-icon gradient-4">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
@@ -103,7 +156,7 @@ const LandingPage = ({ onNavigateToLogin }) => {
             <p>Administrators can manage multiple customer portals with granular permissions.</p>
           </div>
 
-          <div className="feature-card">
+          <div className="feature-card stagger-fade" style={{ animationDelay: '0.5s' }}>
             <div className="feature-icon gradient-5">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -113,7 +166,7 @@ const LandingPage = ({ onNavigateToLogin }) => {
             <p>Automatic synchronization with GitLab wikis ensures you always have the latest links.</p>
           </div>
 
-          <div className="feature-card">
+          <div className="feature-card stagger-fade" style={{ animationDelay: '0.6s' }}>
             <div className="feature-icon gradient-6">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
@@ -131,14 +184,14 @@ const LandingPage = ({ onNavigateToLogin }) => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="pricing-section">
+      <section id="pricing" className={`pricing-section ${isVisible.pricing ? 'visible' : ''}`}>
         <div className="section-header">
-          <h2>Enterprise Solution</h2>
-          <p>Included with your Antara ERP subscription</p>
+          <h2 className="fade-in-up">Enterprise Solution</h2>
+          <p className="fade-in-up" style={{ animationDelay: '0.1s' }}>Included with your Antara ERP subscription</p>
         </div>
 
         <div className="pricing-grid" style={{ justifyContent: 'center' }}>
-          <div className="pricing-card featured" style={{ maxWidth: '500px' }}>
+          <div className="pricing-card featured scale-in" style={{ maxWidth: '500px', animationDelay: '0.2s' }}>
             <div className="popular-badge">INCLUDED</div>
             <h3>Synks Portal</h3>
             <div className="price">
