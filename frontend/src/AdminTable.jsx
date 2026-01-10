@@ -44,11 +44,11 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
 
   const getAvatarColor = (username) => {
     const colors = [
-      'linear-gradient(135deg, #60efff, #0061ff)',
-      'linear-gradient(135deg, #0061ff, #ff2e8d)',
-      'linear-gradient(135deg, #ff2e8d, #ff9a56)',
-      'linear-gradient(135deg, #ff9a56, #ffd56b)',
-      'linear-gradient(135deg, #ffd56b, #60efff)',
+      'linear-gradient(135deg, #E31E24, #B91C1C)',
+      'linear-gradient(135deg, #0066CC, #003DA5)',
+      'linear-gradient(135deg, #E31E24, #0066CC)',
+      'linear-gradient(135deg, #003DA5, #E31E24)',
+      'linear-gradient(135deg, #B91C1C, #0066CC)',
     ];
     const index = username.charCodeAt(0) % colors.length;
     return colors[index];
@@ -208,7 +208,6 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
                       </div>
                       <div className="user-info">
                         <div className="user-name">{user.username}</div>
-                        <div className="user-email">{user.username.toLowerCase()}@company.io</div>
                       </div>
                     </div>
                   </td>
