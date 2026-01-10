@@ -131,7 +131,7 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
       {/* Header */}
       <header className="admin-dashboard-header">
         <div className="header-left">
-          <h1 className="dashboard-logo">synks</h1>
+          <h1 className="dashboard-logo">synks <span style={{ fontSize: '0.5em', color: 'rgba(255,255,255,0.4)', marginLeft: '0.5rem' }}>by Systemhaus</span></h1>
         </div>
         <div className="header-right">
           <button className="header-btn user-btn" title={currentUsername}>

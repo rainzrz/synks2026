@@ -279,7 +279,7 @@
 }
 
 .pricing-card.featured {
-  background: rgba(227, 30, 36, 0.05);
+  background: transparent;
   border: 2px solid rgba(227, 30, 36, 0.3);
 }
 

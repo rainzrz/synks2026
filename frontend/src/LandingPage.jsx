@@ -30,15 +30,14 @@ const LandingPage = ({ onNavigateToLogin }) => {
         </div>
 
         <h1 className="hero-title">
-          <span className="title-line">Customer Portal</span>
-          <span className="title-line">Management</span>
-          <span className="title-line gradient-text">Made Simple</span>
+          <span className="title-line">Customer Portal Management</span>
+          <span className="title-line gradient-text">for Antara ERP</span>
         </h1>
 
         <p className="hero-subtitle">
-          Streamline access to your Antara ERP environments.
+          Provide your customers with a centralized and secure experience.
           <br />
-          Synks centralizes all customer links, wikis, and resources in one secure portal.
+          Synks organizes links, wikis, and critical resources into a single, reliable portal.
         </p>
 
         <div className="hero-cta">
@@ -159,7 +158,7 @@ const LandingPage = ({ onNavigateToLogin }) => {
               <li>✓ Regular updates & improvements</li>
             </ul>
             <button className="pricing-btn gradient-btn" onClick={onNavigateToLogin}>Access Portal</button>
-            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginTop: '1rem' }}>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginTop: '1rem', textAlign: 'center' }}>
               Contact your Systemhaus representative for access
             </p>
           </div>
@@ -195,7 +194,7 @@ const LandingPage = ({ onNavigateToLogin }) => {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 Systemhaus. All rights reserved. | Synks Portal v1.0</p>
+          <p>&copy; 2026 Systemhaus. All rights reserved.</p>
         </div>
       </footer>
     </div>
