@@ -11,9 +11,11 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     fetchUsers();
+    setTimeout(() => setIsInitialLoad(false), 100);
   }, []);
 
   const fetchUsers = async () => {
@@ -127,9 +129,9 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
   };
 
   return (
-    <div className="admin-dashboard">
+    <div className={`admin-dashboard ${isInitialLoad ? 'animate-in' : ''}`}>
       {/* Header */}
-      <header className="admin-dashboard-header">
+      <header className="admin-dashboard-header slide-down">
         <div className="header-left">
           <h1 className="dashboard-logo">synks <span style={{ fontSize: '0.5em', color: 'rgba(255,255,255,0.4)', marginLeft: '0.5rem' }}>by Systemhaus</span></h1>
         </div>
@@ -165,7 +167,7 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
         ) : (
           <>
             {/* Users Table */}
-            <div className="admin-section">
+            <div className="admin-section fade-in-up" style={{ animationDelay: '0.1s' }}>
               <AdminTable
                 users={users}
                 onDeleteUser={handleDeleteUser}
@@ -177,7 +179,7 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
 
             {/* Dashboard Preview */}
             {dashboardData && (
-              <div className="dashboard-preview-section">
+              <div className="dashboard-preview-section fade-in-scale" style={{ animationDelay: '0.3s' }}>
                 <div className="preview-header">
                   <h2>Dashboard: {selectedUser}</h2>
                   <div className="preview-controls">
@@ -258,7 +260,11 @@ function Dashboard({ data, searchTerm }) {
   return (
     <div className="dashboard-grid">
       {filteredGroups.map((group, idx) => (
-        <div key={idx} className="dashboard-card">
+        <div
+          key={idx}
+          className="dashboard-card stagger-fade"
+          style={{ animationDelay: `${0.1 + (idx * 0.1)}s` }}
+        >
           <div className="card-header" onClick={() => toggleCard(idx)} style={{ cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <svg

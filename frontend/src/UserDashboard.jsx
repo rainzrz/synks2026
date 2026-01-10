@@ -8,9 +8,11 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     fetchDashboard();
+    setTimeout(() => setIsInitialLoad(false), 100);
   }, []);
 
   const fetchDashboard = async () => {
@@ -68,9 +70,9 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
   }) : [];
 
   return (
-    <div className="user-dashboard">
+    <div className={`user-dashboard ${isInitialLoad ? 'animate-in' : ''}`}>
       {/* Header */}
-      <header className="user-dashboard-header">
+      <header className="user-dashboard-header slide-down">
         <div className="header-left">
           <h1 className="dashboard-logo">synks <span style={{ fontSize: '0.5em', color: 'rgba(255,255,255,0.4)', marginLeft: '0.5rem' }}>by Systemhaus</span></h1>
           <div className="user-welcome">
@@ -125,7 +127,7 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
         ) : (
           <>
             {/* Search Bar */}
-            <div className="dashboard-controls">
+            <div className="dashboard-controls fade-in-up" style={{ animationDelay: '0.1s' }}>
               <div className="search-bar">
                 <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8"/>
@@ -182,7 +184,11 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
             ) : (
               <div className="dashboard-grid">
                 {filteredGroups.map((group, idx) => (
-                  <div key={idx} className="product-card">
+                  <div
+                    key={idx}
+                    className="product-card stagger-fade"
+                    style={{ animationDelay: `${0.2 + (idx * 0.1)}s` }}
+                  >
                     <div className="card-header">
                       <h3 className="product-name">{group.product}</h3>
                       <span className="environment-badge">{group.environment}</span>
