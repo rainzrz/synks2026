@@ -54,6 +54,7 @@ const LoginPage = ({ onLoginSuccess, onNavigateToLanding }) => {
         <div className="nav-container">
           <div className="nav-logo" onClick={onNavigateToLanding} style={{ cursor: 'pointer' }}>
             <span className="logo-text">synks</span>
+            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginLeft: '0.5rem' }}>by Systemhaus</span>
           </div>
           <button className="nav-back" onClick={onNavigateToLanding}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

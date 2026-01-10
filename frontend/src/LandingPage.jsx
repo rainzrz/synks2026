@@ -30,8 +30,8 @@ const LandingPage = ({ onNavigateToLogin }) => {
         </div>
 
         <h1 className="hero-title">
-          <span className="title-line">Customer Portal Management</span>
-          <span className="title-line gradient-text">for Antara ERP</span>
+          <span className="title-line">Customer Portal for</span>
+          <span className="title-line gradient-text">Antara ERP</span>
         </h1>
 
         <p className="hero-subtitle">
