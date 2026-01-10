@@ -1,0 +1,41 @@
+{
+  "name": "customer-portal-electron",
+  "version": "1.0.0",
+  "description": "Customer Portal Desktop Application",
+  "main": "electron/main.js",
+  "scripts": {
+    "electron:dev": "NODE_ENV=development electron .",
+    "electron:build": "electron-builder",
+    "start": "npm run electron:dev"
+  },
+  "dependencies": {
+    "electron": "^28.0.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.customerportal.app",
+    "productName": "Customer Portal",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**/*",
+      "frontend/dist/**/*",
+      "backend/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "electron/assets/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "electron/assets/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "electron/assets/icon.icns"
+    }
+  }
+}

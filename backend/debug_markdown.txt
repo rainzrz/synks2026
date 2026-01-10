@@ -1,0 +1,32 @@
+# 🇧🇷 A.Buhler Compose 6.0
+## PTA
+- [Antara](http://pta.antara.abuhler.com.br:8095/antara/antara.jnlp)
+- [SelectionPO](http://pta.antara.abuhler.com.br:8095/antara/selectionPO.jnlp)
+- [Production](http://pta.antara.abuhler.com.br:8095/antara/AntaraProduction.jnlp)
+- [AntaraED](http://pta-antara-ed.antara.abuhler.com.br:8095/)
+- [Management](http://pta-management.antara.abuhler.com.br:8095/)
+
+## TTA
+- [Antara](http://tta.antara.abuhler.com.br:8095/antara/antara.jnlp)
+- [SelectionPO](http://tta.antara.abuhler.com.br:8095/antara/selectionPO.jnlp)
+- [Production](http://tta.antara.abuhler.com.br:8095/antara/AntaraProduction.jnlp)
+- [AntaraED](http://tta-antara-ed.antara.abuhler.com.br:8095/)
+- [Management](http://tta-management.antara.abuhler.com.br:8095/)
+ 
+# A.Buhler (Old)
+**Interno** = _Rede local (interna) do Cliente_  
+  
+## PTA
+- [Antara](http://201.20.157.108:8003/antara/antaraExterno.jnlp) | [Antara Interno](http://10.1.1.4:8003/antara/antara.jnlp)
+- [SelectionPO](http://201.20.157.108:8003/antara/selectionPOEX.jnlp) | [SelectionPO Interno](http://10.1.1.4:8003/antara/selectionPO.jnlp)
+- [ED](http://201.20.157.108:7014/login) {-SystemHaus ainda sem acesso externo-} | [ED Interno](http://10.1.1.4:7014/login)
+- [Migration Web Interno](http://10.1.1.4:18003)
+
+## TTA
+- [Antara](http://201.20.157.108:8081/antara/antaraExterno.jnlp) | [Antara Interno](http://10.1.1.4:8081/antara/antara.jnlp)
+- [SelectionPO](http://201.20.157.108:8081/antara/selectionPOEX.jnlp) | [SelectionPO Interno](http://10.1.1.4:8081/antara/selectionPO.jnlp)
+- [ED](http://201.20.157.108:7081/login) {-SystemHaus ainda sem acesso externo-} | [ED Interno](http://10.1.1.4:7081/login)
+- [Migration Web Interno](http://10.1.1.4:18081)
+
+
+
