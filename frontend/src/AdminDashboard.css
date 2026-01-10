@@ -103,13 +103,13 @@
 
 /* Main Content */
 .admin-main {
-  padding: 2rem;
+  padding: 1.5rem;
   max-width: 1600px;
   margin: 0 auto;
 }
 
 .admin-section {
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
 }
 
 /* Loading State */
@@ -142,11 +142,11 @@
 
 /* Dashboard Preview Section */
 .dashboard-preview-section {
-  margin-top: 3rem;
+  margin-top: 1.5rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  padding: 2rem;
+  border-radius: 16px;
+  padding: 1.5rem;
 }
 
 .preview-header {

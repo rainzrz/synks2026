@@ -4,6 +4,9 @@ import './AdminTable.css';
 const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, token }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
+  const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [newUser, setNewUser] = useState({ username: '', password: '', wiki_url: '' });
+  const [createError, setCreateError] = useState('');
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -14,7 +17,7 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
   useEffect(() => {
     // Calculate stats - ensure users is an array
     if (!Array.isArray(users)) {
-      console.warn('AdminTable: users prop is not an array', users);
+      console.warn('[AdminTable] users prop is not an array', users);
       return;
     }
 
@@ -66,12 +69,50 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
     return date.toLocaleDateString();
   };
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+
+    if (!newUser.username || !newUser.password || !newUser.wiki_url) {
+      setCreateError('All fields are required');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newUser)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to create user');
+      }
+
+      // Success - close modal and reset form
+      setShowNewUserModal(false);
+      setNewUser({ username: '', password: '', wiki_url: '' });
+
+      // Trigger parent to refresh users list
+      if (window.location.reload) {
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error('Create user error:', err);
+      setCreateError(err.message);
+    }
+  };
+
   return (
     <div className="admin-table-container">
       {/* Header */}
       <div className="admin-header">
         <div className="admin-title">
-          <span className="admin-logo">USER.CTRL</span>
+          <span className="admin-logo">Admin Panel</span>
           <div className="system-status">
             <span className="status-dot"></span>
             <span>System Online</span>
@@ -136,7 +177,7 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
           </button>
         </div>
 
-        <button className="btn-new-user" onClick={() => window.location.href = '/?register=true'}>
+        <button className="btn-new-user" onClick={() => setShowNewUserModal(true)}>
           <span className="btn-icon">+</span>
           NEW USER
         </button>
@@ -156,21 +197,21 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
           </thead>
           <tbody>
             {filteredUsers.map((user) => (
-              <tr key={user.username} className="table-row">
-                <td>
-                  <div className="user-cell">
-                    <div
-                      className="user-avatar"
-                      style={{ background: getAvatarColor(user.username) }}
-                    >
-                      {getInitials(user.username)}
+                <tr key={user.username} className="table-row">
+                  <td>
+                    <div className="user-cell">
+                      <div
+                        className="user-avatar"
+                        style={{ background: getAvatarColor(user.username) }}
+                      >
+                        {getInitials(user.username)}
+                      </div>
+                      <div className="user-info">
+                        <div className="user-name">{user.username}</div>
+                        <div className="user-email">{user.username.toLowerCase()}@company.io</div>
+                      </div>
                     </div>
-                    <div className="user-info">
-                      <div className="user-name">{user.username}</div>
-                      <div className="user-email">{user.username.toLowerCase()}@company.io</div>
-                    </div>
-                  </div>
-                </td>
+                  </td>
                 <td>
                   <span className={`role-badge ${user.is_admin ? 'admin' : 'user'}`}>
                     {user.is_admin ? 'ADMIN' : 'USER'}
@@ -187,7 +228,10 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
                   <div className="action-buttons">
                     <button
                       className="action-btn view"
-                      onClick={() => onViewDashboard(user.username)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewDashboard(user.username);
+                      }}
                       title="View Dashboard"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -197,7 +241,10 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
                     </button>
                     <button
                       className="action-btn delete"
-                      onClick={() => onDeleteUser(user.username)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteUser(user.username);
+                      }}
                       title="Delete User"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -229,6 +276,66 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
           </div>
         )}
       </div>
+
+      {/* New User Modal */}
+      {showNewUserModal && (
+        <div className="modal-overlay" onClick={() => setShowNewUserModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Create New User</h3>
+              <button className="modal-close" onClick={() => setShowNewUserModal(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleCreateUser} className="modal-form">
+              {createError && (
+                <div className="error-message">{createError}</div>
+              )}
+              <div className="form-group">
+                <label>GitLab Username</label>
+                <input
+                  type="text"
+                  value={newUser.username}
+                  onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                  placeholder="Enter GitLab username"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>GitLab Password</label>
+                <input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  placeholder="Enter GitLab password"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Wiki URL</label>
+                <input
+                  type="url"
+                  value={newUser.wiki_url}
+                  onChange={(e) => setNewUser({ ...newUser, wiki_url: e.target.value })}
+                  placeholder="https://your-gitlab.com/project/-/wikis/home"
+                  required
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={() => setShowNewUserModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-submit">
+                  Create User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

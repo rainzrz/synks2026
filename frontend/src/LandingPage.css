@@ -257,8 +257,8 @@
 }
 
 .pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  display: flex;
+  justify-content: center;
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -305,6 +305,7 @@
 .price {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   margin-bottom: 2rem;
 }
 

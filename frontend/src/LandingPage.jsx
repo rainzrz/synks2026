@@ -9,12 +9,12 @@ const LandingPage = ({ onNavigateToLogin }) => {
         <div className="nav-container">
           <div className="nav-logo">
             <span className="logo-text">synks</span>
+            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginLeft: '0.5rem' }}>by Systemhaus</span>
           </div>
           <div className="nav-links">
             <a href="#features">Features</a>
             <a href="#pricing">Pricing</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
+            <a href="https://www.systemhaus.com.br/en/sobre-a-systemhaus" target="_blank" rel="noopener noreferrer">About Systemhaus</a>
           </div>
           <button className="nav-signin" onClick={onNavigateToLogin}>
             Sign In
@@ -26,27 +26,27 @@ const LandingPage = ({ onNavigateToLogin }) => {
       <section className="hero-section">
         <div className="hero-badge">
           <span className="badge-icon">✦</span>
-          <span>Trusted by 10,000+ teams worldwide</span>
+          <span>35+ years serving the leather industry</span>
         </div>
 
         <h1 className="hero-title">
-          <span className="title-line">Wiki</span>
-          <span className="title-line">management</span>
-          <span className="title-line gradient-text">without the chaos</span>
+          <span className="title-line">Customer Portal</span>
+          <span className="title-line">Management</span>
+          <span className="title-line gradient-text">Made Simple</span>
         </h1>
 
         <p className="hero-subtitle">
-          Transform scattered wikis into seamless workflows. Synks
+          Streamline access to your Antara ERP environments. Synks centralizes
           <br />
-          brings clarity, speed, and joy back to team collaboration.
+          all customer links, wikis, and resources in one secure portal.
         </p>
 
         <div className="hero-cta">
           <button className="btn-primary gradient-btn" onClick={onNavigateToLogin}>
-            Start Free Trial
+            Access Portal
           </button>
           <button className="btn-secondary" onClick={onNavigateToLogin}>
-            Watch Demo
+            Learn More
           </button>
         </div>
       </section>
@@ -54,8 +54,8 @@ const LandingPage = ({ onNavigateToLogin }) => {
       {/* Features Section */}
       <section id="features" className="features-section">
         <div className="section-header">
-          <h2>Everything you need</h2>
-          <p>Powerful features to streamline your wiki management</p>
+          <h2>Designed for Tannery Operations</h2>
+          <p>Powerful tools built specifically for Antara ERP customers</p>
         </div>
 
         <div className="features-grid">
@@ -66,8 +66,8 @@ const LandingPage = ({ onNavigateToLogin }) => {
                 <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
               </svg>
             </div>
-            <h3>Multi-Client Dashboard</h3>
-            <p>Manage multiple client wikis from a single, unified dashboard.</p>
+            <h3>Multi-Environment Access</h3>
+            <p>Access all your Antara environments - PTA, TTA, Production, and Development from one place.</p>
           </div>
 
           <div className="feature-card">
@@ -77,8 +77,8 @@ const LandingPage = ({ onNavigateToLogin }) => {
                 <path d="M7 11V7a5 5 0 0110 0v4"/>
               </svg>
             </div>
-            <h3>GitLab Integration</h3>
-            <p>Seamlessly authenticate and access private GitLab wikis.</p>
+            <h3>Secure Authentication</h3>
+            <p>Enterprise-grade security with GitLab LDAP integration and role-based access control.</p>
           </div>
 
           <div className="feature-card">
@@ -88,8 +88,8 @@ const LandingPage = ({ onNavigateToLogin }) => {
                 <path d="M21 21l-4.35-4.35"/>
               </svg>
             </div>
-            <h3>Smart Search</h3>
-            <p>Find any link or document across all wikis instantly.</p>
+            <h3>Quick Navigation</h3>
+            <p>Find any system link instantly with powerful search across all products and environments.</p>
           </div>
 
           <div className="feature-card">
@@ -100,8 +100,8 @@ const LandingPage = ({ onNavigateToLogin }) => {
                 <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
               </svg>
             </div>
-            <h3>Admin Control</h3>
-            <p>Granular permissions and user management for administrators.</p>
+            <h3>Customer Management</h3>
+            <p>Administrators can manage multiple customer portals with granular permissions.</p>
           </div>
 
           <div className="feature-card">
@@ -110,8 +110,8 @@ const LandingPage = ({ onNavigateToLogin }) => {
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
             </div>
-            <h3>Real-time Updates</h3>
-            <p>Stay in sync with automatic content refresh and caching.</p>
+            <h3>Always Up-to-Date</h3>
+            <p>Automatic synchronization with GitLab wikis ensures you always have the latest links.</p>
           </div>
 
           <div className="feature-card">
@@ -125,8 +125,8 @@ const LandingPage = ({ onNavigateToLogin }) => {
                 <line x1="12" y1="22.08" x2="12" y2="12"/>
               </svg>
             </div>
-            <h3>Organized Structure</h3>
-            <p>Hierarchical organization by product, environment, and links.</p>
+            <h3>Organized by Product</h3>
+            <p>Links organized by product (Antara, AntaraED, IwC) and environment for easy access.</p>
           </div>
         </div>
       </section>
@@ -134,62 +134,34 @@ const LandingPage = ({ onNavigateToLogin }) => {
       {/* Pricing Section */}
       <section id="pricing" className="pricing-section">
         <div className="section-header">
-          <h2>Simple, transparent pricing</h2>
-          <p>Choose the plan that fits your team</p>
+          <h2>Enterprise Solution</h2>
+          <p>Included with your Antara ERP subscription</p>
         </div>
 
-        <div className="pricing-grid">
-          <div className="pricing-card">
-            <h3>Starter</h3>
+        <div className="pricing-grid" style={{ justifyContent: 'center' }}>
+          <div className="pricing-card featured" style={{ maxWidth: '500px' }}>
+            <div className="popular-badge">INCLUDED</div>
+            <h3>Synks Portal</h3>
             <div className="price">
-              <span className="price-currency">$</span>
-              <span className="price-amount">29</span>
-              <span className="price-period">/month</span>
+              <span className="price-amount" style={{ fontSize: '2.5rem' }}>Complimentary</span>
             </div>
+            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '1.5rem' }}>
+              Synks is included as part of your Systemhaus Antara ERP subscription at no additional cost.
+            </p>
             <ul className="pricing-features">
-              <li>✓ Up to 5 clients</li>
-              <li>✓ Basic GitLab integration</li>
-              <li>✓ Email support</li>
-              <li>✓ 7-day history</li>
+              <li>✓ Unlimited users</li>
+              <li>✓ All environments (PTA, TTA, Production)</li>
+              <li>✓ GitLab integration</li>
+              <li>✓ Admin panel & user management</li>
+              <li>✓ Real-time updates</li>
+              <li>✓ Secure authentication</li>
+              <li>✓ Priority support from Systemhaus</li>
+              <li>✓ Regular updates & improvements</li>
             </ul>
-            <button className="pricing-btn">Get Started</button>
-          </div>
-
-          <div className="pricing-card featured">
-            <div className="popular-badge">POPULAR</div>
-            <h3>Professional</h3>
-            <div className="price">
-              <span className="price-currency">$</span>
-              <span className="price-amount">99</span>
-              <span className="price-period">/month</span>
-            </div>
-            <ul className="pricing-features">
-              <li>✓ Unlimited clients</li>
-              <li>✓ Advanced GitLab integration</li>
-              <li>✓ Priority support</li>
-              <li>✓ Unlimited history</li>
-              <li>✓ Custom branding</li>
-              <li>✓ API access</li>
-            </ul>
-            <button className="pricing-btn gradient-btn">Get Started</button>
-          </div>
-
-          <div className="pricing-card">
-            <h3>Enterprise</h3>
-            <div className="price">
-              <span className="price-currency">$</span>
-              <span className="price-amount">299</span>
-              <span className="price-period">/month</span>
-            </div>
-            <ul className="pricing-features">
-              <li>✓ Everything in Professional</li>
-              <li>✓ Dedicated support</li>
-              <li>✓ SLA guarantee</li>
-              <li>✓ On-premise deployment</li>
-              <li>✓ Custom integrations</li>
-              <li>✓ Training & onboarding</li>
-            </ul>
-            <button className="pricing-btn">Contact Sales</button>
+            <button className="pricing-btn gradient-btn" onClick={onNavigateToLogin}>Access Portal</button>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', marginTop: '1rem' }}>
+              Contact your Systemhaus representative for access
+            </p>
           </div>
         </div>
       </section>
@@ -199,31 +171,31 @@ const LandingPage = ({ onNavigateToLogin }) => {
         <div className="footer-content">
           <div className="footer-brand">
             <span className="logo-text">synks</span>
-            <p>Wiki management without the chaos</p>
+            <p>by Systemhaus - Empowering the Leather Industry Since 1988</p>
           </div>
           <div className="footer-links">
             <div className="footer-column">
               <h4>Product</h4>
               <a href="#features">Features</a>
               <a href="#pricing">Pricing</a>
-              <a href="#docs">Documentation</a>
+              <a href="https://www.systemhaus.com.br" target="_blank" rel="noopener noreferrer">Systemhaus Website</a>
             </div>
             <div className="footer-column">
-              <h4>Company</h4>
-              <a href="#about">About</a>
-              <a href="#blog">Blog</a>
-              <a href="#careers">Careers</a>
+              <h4>Antara ERP</h4>
+              <a href="https://www.systemhaus.com.br/en/sobre-a-systemhaus" target="_blank" rel="noopener noreferrer">About Us</a>
+              <a href="https://www.systemhaus.com.br" target="_blank" rel="noopener noreferrer">Products</a>
+              <a href="https://www.systemhaus.com.br" target="_blank" rel="noopener noreferrer">Contact</a>
             </div>
             <div className="footer-column">
               <h4>Support</h4>
-              <a href="#help">Help Center</a>
-              <a href="#contact">Contact</a>
-              <a href="#status">Status</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigateToLogin(); }}>Help Center</a>
+              <a href="https://www.systemhaus.com.br" target="_blank" rel="noopener noreferrer">Contact Support</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigateToLogin(); }}>System Status</a>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 Synks. All rights reserved.</p>
+          <p>&copy; 2026 Systemhaus. All rights reserved. | Synks Portal v1.0</p>
         </div>
       </footer>
     </div>

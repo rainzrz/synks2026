@@ -19,6 +19,8 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setError(''); // Clear previous errors
+
       const response = await fetch(`${API_BASE_URL}/api/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -26,7 +28,7 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        throw new Error(`Failed to fetch users: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -43,7 +45,7 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
         setError('Invalid data format received from server');
       }
     } catch (err) {
-      console.error('Error fetching users:', err);
+      console.error('[AdminDashboard] Error fetching users:', err);
       setError(err.message);
       setUsers([]); // Ensure users is always an array
     } finally {
@@ -223,6 +225,15 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
 
 // Dashboard Component
 function Dashboard({ data, searchTerm }) {
+  const [expandedCards, setExpandedCards] = React.useState({});
+
+  const toggleCard = (idx) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
   const filteredGroups = data.groups.filter(group => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -251,26 +262,44 @@ function Dashboard({ data, searchTerm }) {
     <div className="dashboard-grid">
       {filteredGroups.map((group, idx) => (
         <div key={idx} className="dashboard-card">
-          <div className="card-header">
-            <h3 className="card-product">{group.product}</h3>
+          <div className="card-header" onClick={() => toggleCard(idx)} style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                style={{
+                  transform: expandedCards[idx] ? 'rotate(90deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease'
+                }}
+              >
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+              <h3 className="card-product">{group.product}</h3>
+            </div>
             <span className="card-env">{group.environment}</span>
           </div>
-          <div className="card-links">
-            {group.links.map((link, linkIdx) => (
-              <a
-                key={linkIdx}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="dashboard-link"
-              >
-                <span className="link-text">{link.text}</span>
-                <svg className="link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
-                </svg>
-              </a>
-            ))}
-          </div>
+          {expandedCards[idx] && (
+            <div className="card-links">
+              {group.links.map((link, linkIdx) => (
+                <a
+                  key={linkIdx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="dashboard-link"
+                >
+                  <span className="link-text">{link.text}</span>
+                  <svg className="link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+                  </svg>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>
