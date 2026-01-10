@@ -82,7 +82,7 @@ class LoginResponse(BaseModel):
     message: str
 
 class LinkItem(BaseModel):
-    name: str
+    text: str  # Changed from 'name' to 'text' for frontend compatibility
     url: str
 
 class ProductGroup(BaseModel):
@@ -476,10 +476,10 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
             link_pattern = r'\[([^\]]+)\]\(([^\)]+)\)'
             matches = re.findall(link_pattern, line)
 
-            for name, url in matches:
-                link = LinkItem(name=name.strip(), url=url.strip())
+            for text, url in matches:
+                link = LinkItem(text=text.strip(), url=url.strip())
                 current_links.append(link)
-                print(f"[DEBUG] Found link: {name} -> {url}")
+                print(f"[DEBUG] Found link: {text} -> {url}")
 
     # Add last group
     if current_product and current_env and current_links:

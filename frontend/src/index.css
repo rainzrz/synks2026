@@ -1,0 +1,177 @@
+/* Global Styles - Theme Consistency */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Color Palette */
+  --color-bg: #0a0a0f;
+  --color-cyan: #60efff;
+  --color-blue: #0061ff;
+  --color-pink: #ff2e8d;
+  --color-orange: #ff9a56;
+  --color-yellow: #ffd56b;
+  --color-green: #0cfc82;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #60efff 0%, #0061ff 50%, #ff2e8d 100%);
+  --gradient-secondary: linear-gradient(135deg, #60efff, #0cfc82);
+
+  /* Opacity Levels */
+  --opacity-subtle: rgba(255, 255, 255, 0.02);
+  --opacity-soft: rgba(255, 255, 255, 0.05);
+  --opacity-medium: rgba(255, 255, 255, 0.1);
+  --opacity-bright: rgba(255, 255, 255, 0.2);
+
+  /* Border Colors */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-soft: rgba(255, 255, 255, 0.1);
+  --border-medium: rgba(255, 255, 255, 0.2);
+  --border-cyan: rgba(96, 239, 255, 0.3);
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 10px 40px rgba(96, 239, 255, 0.3);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--color-bg);
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+code, pre {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Courier New', monospace;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(96, 239, 255, 0.3);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(96, 239, 255, 0.5);
+}
+
+/* Selection */
+::selection {
+  background: rgba(96, 239, 255, 0.3);
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background: rgba(96, 239, 255, 0.3);
+  color: #ffffff;
+}
+
+/* Focus Styles */
+*:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 2px;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Utility Classes */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-cyan {
+  color: var(--color-cyan);
+}
+
+.text-muted {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.text-subtle {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Animation Utilities */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(96, 239, 255, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(96, 239, 255, 0.6); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  nav, header, footer, .no-print {
+    display: none !important;
+  }
+}
