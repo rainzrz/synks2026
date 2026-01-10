@@ -210,86 +210,84 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
 def parse_markdown_links(content: str) -> List[ProductGroup]:
     """
     Parse markdown content to extract product links
-    Enhanced version with better detection
+    Hierarchy: # = Product, ## = Environment
     """
     groups = []
     lines = content.split('\n')
-    
-    current_country = None
+
     current_product = None
     current_env = None
     current_links = []
-    
+
     print("\n🔍 Parsing content...")
-    
+
     for i, line in enumerate(lines):
+        original_line = line
         line = line.strip()
-        
+
         # Skip empty lines
         if not line:
             continue
-        
-        # Debug first 20 non-empty lines
-        if i < 20:
-            print(f"Line {i}: {line[:100]}")
-        
-        # Detect country/product header - look for flag emojis or specific patterns
-        if ('🇧🇷' in line or '🇺🇸' in line or '🇩🇪' in line) and not line.startswith('*') and not line.startswith('-'):
+
+        # Debug first 30 non-empty lines
+        if i < 30:
+            print(f"Line {i}: {original_line[:100]}")
+
+        # Detect product header (# Title)
+        if original_line.startswith('# '):
             # Save previous group if exists
-            if current_country and current_links:
+            if current_product and current_env and current_links:
                 groups.append(ProductGroup(
-                    country=current_country,
-                    product=current_product or "",
-                    environment=current_env or "",
+                    country="",
+                    product=current_product,
+                    environment=current_env,
                     links=current_links
                 ))
-                print(f"✅ Added group: {current_country} with {len(current_links)} links")
+                print(f"✅ Added group: {current_product} - {current_env} with {len(current_links)} links")
                 current_links = []
-            
-            # Parse new header
-            parts = line.split()
-            if len(parts) >= 2:
-                # Country is usually flag + country name
-                current_country = ' '.join(parts[:2]) if any(c in parts[0] for c in '🇧🇷🇺🇸🇩🇪') else parts[0]
-                current_product = ' '.join(parts[2:]) if len(parts) > 2 else ""
-                print(f"🏳️ New header: {current_country} - {current_product}")
-        
-        # Detect environment (usually all caps, short word)
-        elif line and len(line) <= 10 and line.isupper() and not line.startswith('*') and not line.startswith('-') and not line.startswith('['):
-            current_env = line
-            print(f"🏷️ Environment: {current_env}")
-        
-        # Detect markdown links - enhanced pattern
-        elif '[' in line and '](' in line:
-            # Extract all links using regex
+                current_env = None
+
+            # Parse new product header
+            current_product = line[2:].strip()  # Remove "# " prefix
+            print(f"🏷️ Product: {current_product}")
+
+        # Detect environment/version header (## Title)
+        elif original_line.startswith('## '):
+            # Save previous environment group if exists
+            if current_product and current_env and current_links:
+                groups.append(ProductGroup(
+                    country="",
+                    product=current_product,
+                    environment=current_env,
+                    links=current_links
+                ))
+                print(f"✅ Added group: {current_product} - {current_env} with {len(current_links)} links")
+                current_links = []
+
+            # Set new environment
+            current_env = line[3:].strip()  # Remove "## " prefix
+            print(f"🔧 Environment: {current_env}")
+
+        # Detect markdown links in bullet points
+        elif (line.startswith('*') or line.startswith('-')) and '[' in line and '](' in line:
             link_pattern = r'\[([^\]]+)\]\(([^\)]+)\)'
             matches = re.findall(link_pattern, line)
-            
+
             for name, url in matches:
                 link = LinkItem(name=name.strip(), url=url.strip())
                 current_links.append(link)
                 print(f"🔗 Found link: {name} -> {url}")
-        
-        # Also detect simple bullet points with links
-        elif line.startswith('*') or line.startswith('-'):
-            link_pattern = r'\[([^\]]+)\]\(([^\)]+)\)'
-            matches = re.findall(link_pattern, line)
-            
-            for name, url in matches:
-                link = LinkItem(name=name.strip(), url=url.strip())
-                current_links.append(link)
-                print(f"🔗 Found link: {name} -> {url}")
-    
+
     # Add last group
-    if current_country and current_links:
+    if current_product and current_env and current_links:
         groups.append(ProductGroup(
-            country=current_country,
-            product=current_product or "",
-            environment=current_env or "",
+            country="",
+            product=current_product,
+            environment=current_env,
             links=current_links
         ))
-        print(f"✅ Added final group: {current_country} with {len(current_links)} links")
-    
+        print(f"✅ Added final group: {current_product} - {current_env} with {len(current_links)} links")
+
     return groups
 
 async def fetch_wiki_content(wiki_url: str, session_cookie: str = None) -> str:

@@ -197,7 +197,7 @@ function App() {
             {dashboardData.groups.map((group, groupIndex) => (
               <div key={groupIndex} className="product-group">
                 <div className="group-header">
-                  <h2>{group.country} {group.product}</h2>
+                  <h2>{group.product}</h2>
                   {group.environment && (
                     <span className="environment-badge">{group.environment}</span>
                   )}
