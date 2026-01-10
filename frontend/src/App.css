@@ -101,6 +101,31 @@ body {
   cursor: not-allowed;
 }
 
+.toggle-mode-button {
+  background: transparent;
+  color: #667eea;
+  border: 1px solid #667eea;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 12px;
+}
+
+.toggle-mode-button:hover {
+  background: #667eea;
+  color: white;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+  color: #666;
+  font-size: 12px;
+}
+
 .error-message {
   background: #fee;
   color: #c33;
@@ -292,6 +317,227 @@ body {
   font-size: 16px;
 }
 
+/* Admin Panel */
+.admin-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.search-bar {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.clients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.clients-list h2 {
+  color: #333;
+  font-size: 24px;
+  margin: 0 0 8px 0;
+}
+
+.client-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.client-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.client-info {
+  flex: 1;
+}
+
+.client-info h3 {
+  color: #333;
+  font-size: 18px;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.client-url {
+  color: #666;
+  font-size: 14px;
+  margin: 4px 0;
+  word-break: break-all;
+}
+
+.client-info small {
+  color: #999;
+  font-size: 12px;
+}
+
+.client-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.view-button, .edit-button, .delete-button, .back-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.view-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.edit-button {
+  background: #f59e0b;
+  color: white;
+}
+
+.edit-button:hover {
+  background: #d97706;
+}
+
+.delete-button {
+  background: #ef4444;
+  color: white;
+}
+
+.delete-button:hover {
+  background: #dc2626;
+}
+
+.back-button {
+  background: #6b7280;
+  color: white;
+}
+
+.back-button:hover {
+  background: #4b5563;
+}
+
+.no-results {
+  text-align: center;
+  padding: 48px 24px;
+  background: white;
+  border-radius: 12px;
+  color: #666;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.product-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.product-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.product-header h2 {
+  color: #333;
+  font-size: 20px;
+  margin: 0;
+}
+
+.links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.link-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.link-button:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  transform: translateX(4px);
+}
+
+.link-button:hover .link-name {
+  color: white;
+}
+
+.link-button:hover .link-arrow {
+  color: white;
+  transform: translateX(4px);
+}
+
+.link-name {
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.link-arrow {
+  color: #667eea;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header-content {
@@ -299,12 +545,21 @@ body {
     gap: 16px;
   }
 
-  .links-grid {
+  .products-grid {
     grid-template-columns: 1fr;
   }
 
-  .group-header {
+  .client-card {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .client-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .client-actions button {
+    flex: 1;
   }
 }

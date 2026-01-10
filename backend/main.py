@@ -29,13 +29,26 @@ security = HTTPBearer()
 def init_db():
     conn = sqlite3.connect('portal.db')
     c = conn.cursor()
+
+    # Users table with wiki_url
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password_hash TEXT NOT NULL,
+            wiki_url TEXT NOT NULL,
+            is_admin BOOLEAN DEFAULT 0,
+            created_at TIMESTAMP
+        )
+    ''')
+
     c.execute('''
         CREATE TABLE IF NOT EXISTS sessions (
             token TEXT PRIMARY KEY,
             username TEXT NOT NULL,
             mint_session TEXT,
             created_at TIMESTAMP,
-            expires_at TIMESTAMP
+            expires_at TIMESTAMP,
+            FOREIGN KEY (username) REFERENCES users (username)
         )
     ''')
     c.execute('''
@@ -51,14 +64,21 @@ def init_db():
 init_db()
 
 # Models
-class LoginRequest(BaseModel):
+class RegisterRequest(BaseModel):
     username: str
     password: str
-    mint_url: str = "http://mint.systemhaus.com.br:9070"
+    wiki_url: str
+    is_admin: bool = False
+
+class LoginRequest(BaseModel):
+    username: str  # GitLab username
+    password: str  # GitLab password
 
 class LoginResponse(BaseModel):
     token: str
     username: str
+    wiki_url: str
+    is_admin: bool
     message: str
 
 class LinkItem(BaseModel):
@@ -75,20 +95,93 @@ class DashboardResponse(BaseModel):
     groups: List[ProductGroup]
     last_updated: str
 
+class UserInfo(BaseModel):
+    username: str
+    wiki_url: str
+    is_admin: bool
+    created_at: str
+
+class UsersListResponse(BaseModel):
+    users: List[UserInfo]
+
+class UpdateUserRequest(BaseModel):
+    username: str
+    new_password: Optional[str] = None
+    wiki_url: Optional[str] = None
+    is_admin: Optional[bool] = None
+
 # Helper functions
+def hash_password(password: str) -> str:
+    """Hash password using SHA256"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def create_user(username: str, password: str, wiki_url: str, is_admin: bool = False) -> bool:
+    """Create a new user"""
+    try:
+        conn = sqlite3.connect('portal.db')
+        c = conn.cursor()
+
+        password_hash = hash_password(password)
+        now = datetime.now()
+
+        c.execute('''
+            INSERT INTO users (username, password_hash, wiki_url, is_admin, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (username, password_hash, wiki_url, is_admin, now))
+
+        conn.commit()
+        conn.close()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+
+def verify_user(username: str, password: str) -> Optional[dict]:
+    """Verify user credentials and return user data"""
+    conn = sqlite3.connect('portal.db')
+    c = conn.cursor()
+
+    c.execute('''
+        SELECT username, wiki_url, is_admin
+        FROM users
+        WHERE username = ? AND password_hash = ?
+    ''', (username, hash_password(password)))
+
+    result = c.fetchone()
+    conn.close()
+
+    if not result:
+        return None
+
+    return {
+        "username": result[0],
+        "wiki_url": result[1],
+        "is_admin": bool(result[2])
+    }
+
+def get_user_wiki_url(username: str) -> Optional[str]:
+    """Get user's wiki URL"""
+    conn = sqlite3.connect('portal.db')
+    c = conn.cursor()
+
+    c.execute('SELECT wiki_url FROM users WHERE username = ?', (username,))
+    result = c.fetchone()
+    conn.close()
+
+    return result[0] if result else None
+
 def create_session(username: str, mint_session: str = None) -> str:
     token = secrets.token_urlsafe(32)
     conn = sqlite3.connect('portal.db')
     c = conn.cursor()
-    
+
     now = datetime.now()
     expires = now + timedelta(hours=8)
-    
+
     c.execute('''
         INSERT INTO sessions (token, username, mint_session, created_at, expires_at)
         VALUES (?, ?, ?, ?, ?)
     ''', (token, username, mint_session, now, expires))
-    
+
     conn.commit()
     conn.close()
     return token
@@ -96,28 +189,31 @@ def create_session(username: str, mint_session: str = None) -> str:
 def verify_token(token: str) -> Optional[dict]:
     conn = sqlite3.connect('portal.db')
     c = conn.cursor()
-    
+
     c.execute('''
-        SELECT username, mint_session, expires_at 
-        FROM sessions 
-        WHERE token = ?
+        SELECT s.username, s.mint_session, s.expires_at, u.wiki_url, u.is_admin
+        FROM sessions s
+        JOIN users u ON s.username = u.username
+        WHERE s.token = ?
     ''', (token,))
-    
+
     result = c.fetchone()
     conn.close()
-    
+
     if not result:
         return None
-    
-    username, mint_session, expires_at = result
+
+    username, mint_session, expires_at, wiki_url, is_admin = result
     expires = datetime.fromisoformat(expires_at)
-    
+
     if datetime.now() > expires:
         return None
-    
+
     return {
         "username": username,
-        "mint_session": mint_session
+        "mint_session": mint_session,
+        "wiki_url": wiki_url,
+        "is_admin": bool(is_admin)
     }
 
 async def authenticate_with_mint(username: str, password: str, mint_url: str) -> Optional[str]:
@@ -129,7 +225,7 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
         async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
             # Step 1: Get the login page to extract CSRF token
             login_url = f"{mint_url}/users/sign_in"
-            print(f"🔐 Fetching login page: {login_url}")
+            print(f"[AUTH] Fetching login page: {login_url}")
             
             response = await client.get(login_url)
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -137,15 +233,15 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
             # Find CSRF token (authenticity_token)
             csrf_input = soup.find('input', {'name': 'authenticity_token'})
             if not csrf_input:
-                print("❌ CSRF token not found")
+                print("[ERROR] CSRF token not found")
                 return None
             
             csrf_token = csrf_input.get('value')
-            print(f"✅ Found CSRF token: {csrf_token[:20]}...")
+            print(f"[OK] Found CSRF token: {csrf_token[:20]}...")
             
             # Get initial cookies
             initial_cookies = dict(response.cookies)
-            print(f"🍪 Initial cookies: {list(initial_cookies.keys())}")
+            print(f"[COOKIE] Initial cookies: {list(initial_cookies.keys())}")
             
             # Step 2: Submit login form (LDAP)
             ldap_login_url = f"{mint_url}/users/auth/ldapmain/callback"
@@ -157,7 +253,7 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
                 'remember_me': '0'
             }
             
-            print(f"🔑 Attempting LDAP login for user: {username}")
+            print(f"[AUTH] Attempting LDAP login for user: {username}")
             auth_response = await client.post(
                 ldap_login_url,
                 data=login_data,
@@ -167,17 +263,17 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
                 },
                 cookies=initial_cookies
             )
-            
-            print(f"📬 Login response status: {auth_response.status_code}")
-            print(f"📍 Final URL after login: {auth_response.url}")
+
+            print(f"[AUTH] Login response status: {auth_response.status_code}")
+            print(f"[DEBUG] Final URL after login: {auth_response.url}")
             
             # Collect all cookies from the entire redirect chain
             all_cookies = dict(client.cookies)
-            print(f"🍪 All cookies after login: {list(all_cookies.keys())}")
+            print(f"[COOKIE] All cookies after login: {list(all_cookies.keys())}")
             
             # Check if we have a session cookie
             if '_gitlab_session' in all_cookies:
-                print(f"✅ Login successful! Found session cookie")
+                print(f"[OK] Login successful! Found session cookie")
                 cookie_str = '; '.join([f"{k}={v}" for k, v in all_cookies.items()])
                 return cookie_str
             
@@ -185,27 +281,105 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
             test_url = f"{mint_url}/dashboard/projects"
             test_response = await client.get(test_url)
             
-            print(f"🧪 Test page status: {test_response.status_code}")
-            print(f"🧪 Test page URL: {test_response.url}")
+            print(f"[TEST] Test page status: {test_response.status_code}")
+            print(f"[TEST] Test page URL: {test_response.url}")
             
             # Get cookies after test request
             all_cookies = dict(client.cookies)
-            print(f"🍪 Cookies after test: {list(all_cookies.keys())}")
+            print(f"[COOKIE] Cookies after test: {list(all_cookies.keys())}")
             
             # If we're not redirected to login, auth was successful
             if '/users/sign_in' not in str(test_response.url):
-                print("✅ Auth verified - not redirected to login")
+                print("[OK] Auth verified - not redirected to login")
                 cookie_str = '; '.join([f"{k}={v}" for k, v in all_cookies.items()])
                 return cookie_str if cookie_str else "authenticated"
             
-            print("❌ Login failed - still redirecting to sign in")
+            print("[ERROR] Login failed - still redirecting to sign in")
             return None
             
     except Exception as e:
-        print(f"❌ Auth error: {e}")
+        print(f"[ERROR] Auth error: {e}")
         import traceback
         traceback.print_exc()
         return None
+
+def get_all_users() -> List[dict]:
+    """Get all users from database"""
+    conn = sqlite3.connect('portal.db')
+    c = conn.cursor()
+    c.execute('''
+        SELECT username, wiki_url, is_admin, created_at
+        FROM users
+        ORDER BY username
+    ''')
+    results = c.fetchall()
+    conn.close()
+
+    users = []
+    for row in results:
+        users.append({
+            "username": row[0],
+            "wiki_url": row[1],
+            "is_admin": bool(row[2]),
+            "created_at": row[3]
+        })
+    return users
+
+def update_user(username: str, new_password: Optional[str] = None,
+                wiki_url: Optional[str] = None, is_admin: Optional[bool] = None) -> bool:
+    """Update user information"""
+    try:
+        conn = sqlite3.connect('portal.db')
+        c = conn.cursor()
+
+        # Build update query dynamically
+        updates = []
+        params = []
+
+        if new_password is not None:
+            updates.append("password_hash = ?")
+            params.append(hash_password(new_password))
+
+        if wiki_url is not None:
+            updates.append("wiki_url = ?")
+            params.append(wiki_url)
+
+        if is_admin is not None:
+            updates.append("is_admin = ?")
+            params.append(is_admin)
+
+        if not updates:
+            return False
+
+        params.append(username)
+        query = f"UPDATE users SET {', '.join(updates)} WHERE username = ?"
+
+        c.execute(query, params)
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error updating user: {e}")
+        return False
+
+def delete_user(username: str) -> bool:
+    """Delete user from database"""
+    try:
+        conn = sqlite3.connect('portal.db')
+        c = conn.cursor()
+
+        # Delete user's sessions first
+        c.execute('DELETE FROM sessions WHERE username = ?', (username,))
+
+        # Delete user
+        c.execute('DELETE FROM users WHERE username = ?', (username,))
+
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error deleting user: {e}")
+        return False
 
 def parse_markdown_links(content: str) -> List[ProductGroup]:
     """
@@ -219,7 +393,7 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
     current_env = None
     current_links = []
 
-    print("\n🔍 Parsing content...")
+    print("\n[DEBUG] Parsing content...")
 
     for i, line in enumerate(lines):
         original_line = line
@@ -243,13 +417,13 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
                     environment=current_env,
                     links=current_links
                 ))
-                print(f"✅ Added group: {current_product} - {current_env} with {len(current_links)} links")
+                print(f"[OK] Added group: {current_product} - {current_env} with {len(current_links)} links")
                 current_links = []
                 current_env = None
 
             # Parse new product header
             current_product = line[2:].strip()  # Remove "# " prefix
-            print(f"🏷️ Product: {current_product}")
+            print(f"[DEBUG] Product: {current_product}")
 
         # Detect environment/version header (## Title)
         elif original_line.startswith('## '):
@@ -261,12 +435,12 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
                     environment=current_env,
                     links=current_links
                 ))
-                print(f"✅ Added group: {current_product} - {current_env} with {len(current_links)} links")
+                print(f"[OK] Added group: {current_product} - {current_env} with {len(current_links)} links")
                 current_links = []
 
             # Set new environment
             current_env = line[3:].strip()  # Remove "## " prefix
-            print(f"🔧 Environment: {current_env}")
+            print(f"[DEBUG] Environment: {current_env}")
 
         # Detect markdown links in bullet points
         elif (line.startswith('*') or line.startswith('-')) and '[' in line and '](' in line:
@@ -276,7 +450,7 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
             for name, url in matches:
                 link = LinkItem(name=name.strip(), url=url.strip())
                 current_links.append(link)
-                print(f"🔗 Found link: {name} -> {url}")
+                print(f"[DEBUG] Found link: {name} -> {url}")
 
     # Add last group
     if current_product and current_env and current_links:
@@ -286,7 +460,7 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
             environment=current_env,
             links=current_links
         ))
-        print(f"✅ Added final group: {current_product} - {current_env} with {len(current_links)} links")
+        print(f"[OK] Added final group: {current_product} - {current_env} with {len(current_links)} links")
 
     return groups
 
@@ -311,7 +485,7 @@ async def fetch_wiki_content(wiki_url: str, session_cookie: str = None) -> str:
             else:
                 cookies_dict['_gitlab_session'] = session_cookie
         
-        print(f"🌐 Fetching wiki with cookies: {list(cookies_dict.keys())}")
+        print(f"[FETCH] Fetching wiki with cookies: {list(cookies_dict.keys())}")
         
         async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
             response = await client.get(
@@ -320,13 +494,13 @@ async def fetch_wiki_content(wiki_url: str, session_cookie: str = None) -> str:
                 headers=headers
             )
             
-            print(f"📄 Wiki response status: {response.status_code}")
-            print(f"📍 Final URL: {response.url}")
+            print(f"[DEBUG] Wiki response status: {response.status_code}")
+            print(f"[DEBUG] Final URL: {response.url}")
             
             if response.status_code == 200:
                 # Check if we got redirected to login page
                 if 'sign_in' in str(response.url) or 'You need to sign in' in response.text:
-                    print("⚠️ Got redirected to login - session invalid!")
+                    print("[WARN] Got redirected to login - session invalid!")
                     raise HTTPException(
                         status_code=401, 
                         detail="Session expired. Please login again."
@@ -341,7 +515,7 @@ async def fetch_wiki_content(wiki_url: str, session_cookie: str = None) -> str:
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Error fetching wiki: {e}")
+        print(f"[ERROR] Error fetching wiki: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching wiki: {str(e)}")
 
 def get_cached_content(url: str, max_age_minutes: int = 15) -> Optional[str]:
@@ -395,99 +569,180 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     return user
 
 # Routes
-@app.post("/api/login", response_model=LoginResponse)
-async def login(request: LoginRequest):
+@app.post("/api/register", response_model=LoginResponse)
+async def register(request: RegisterRequest):
     """
-    Authenticate user with Mint credentials
+    Register a new user
     """
-    # Attempt authentication with Mint
-    mint_session = await authenticate_with_mint(
+    # Validate wiki_url format
+    if not request.wiki_url.startswith("http"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid wiki URL format"
+        )
+
+    # Create user
+    success = create_user(
         request.username,
         request.password,
-        request.mint_url
+        request.wiki_url,
+        request.is_admin
     )
-    
-    if not mint_session:
+
+    if not success:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists"
         )
-    
-    # Create local session
-    token = create_session(request.username, mint_session)
-    
+
+    # Create session
+    token = create_session(request.username)
+
     return LoginResponse(
         token=token,
         username=request.username,
+        wiki_url=request.wiki_url,
+        is_admin=request.is_admin,
+        message="Registration successful"
+    )
+
+@app.post("/api/login", response_model=LoginResponse)
+async def login(request: LoginRequest):
+    """
+    Authenticate user with GitLab credentials
+    """
+    # Authenticate with GitLab first
+    print(f"[AUTH] Authenticating {request.username} with GitLab...")
+    mint_session = await authenticate_with_mint(
+        request.username,
+        request.password,
+        "http://mint.systemhaus.com.br:9070"
+    )
+
+    if not mint_session:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid GitLab credentials"
+        )
+
+    print(f"[OK] GitLab authentication successful for {request.username}")
+
+    # Check if user exists in database
+    conn = sqlite3.connect('portal.db')
+    c = conn.cursor()
+    c.execute('SELECT username, wiki_url, is_admin FROM users WHERE username = ?', (request.username,))
+    user_data = c.fetchone()
+    conn.close()
+
+    if not user_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found. Please register first."
+        )
+
+    # Create session with GitLab session
+    token = create_session(request.username, mint_session)
+
+    return LoginResponse(
+        token=token,
+        username=user_data[0],
+        wiki_url=user_data[1],
+        is_admin=bool(user_data[2]),
         message="Login successful"
     )
 
 @app.get("/api/dashboard", response_model=DashboardResponse)
 async def get_dashboard(
-    wiki_url: str = "http://mint.systemhaus.com.br:9070/document-group/customer_-a.buhler/-/wikis/Customer_Links",
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Get parsed dashboard with product links
+    Get parsed dashboard with product links using user's wiki URL
     """
-    print(f"\n🔍 Dashboard request for user: {current_user.get('username')}")
-    print(f"📄 Wiki URL: {wiki_url}")
-    
-    # Extract project ID and wiki page name from URL
-    # URL format: http://mint.systemhaus.com.br:9070/document-group/customer_-a.buhler/-/wikis/Customer_Links
-    parts = wiki_url.split('/')
-    project_path = '/'.join(parts[3:5])  # document-group/customer_-a.buhler
-    wiki_page = parts[-1]  # Customer_Links
-    
-    # Build GitLab API URL
-    # First, URL encode the project path
-    import urllib.parse
-    project_path_encoded = urllib.parse.quote(project_path, safe='')
-    
-    base_url = f"{parts[0]}//{parts[2]}"  # http://mint.systemhaus.com.br:9070
-    api_url = f"{base_url}/api/v4/projects/{project_path_encoded}/wikis/{wiki_page}"
-    
-    print(f"🔧 API URL: {api_url}")
-    
-    # Check cache first
-    cached = get_cached_content(api_url)
-    
-    if cached:
-        print("✅ Using cached content")
-        content = cached
-    else:
-        print("🌐 Fetching fresh content from GitLab API...")
-        # Fetch from API
-        content = await fetch_wiki_content(api_url, current_user.get('mint_session'))
-        print(f"📦 Received {len(content)} bytes from API")
-        cache_content(api_url, content)
-    
-    # Parse JSON response from GitLab API
-    import json
     try:
-        wiki_data = json.loads(content)
-        markdown_text = wiki_data.get('content', '')
-        print(f"✅ Extracted markdown content ({len(markdown_text)} chars)")
-        
-        # Save for debugging
-        with open('debug_markdown.txt', 'w', encoding='utf-8') as f:
-            f.write(markdown_text)
-        print("💾 Saved markdown to debug_markdown.txt")
-        
-    except json.JSONDecodeError as e:
-        print(f"❌ Failed to parse JSON: {e}")
-        markdown_text = content
-    
-    # Parse links
-    groups = parse_markdown_links(markdown_text)
-    print(f"🔗 Found {len(groups)} product groups")
-    for i, group in enumerate(groups, 1):
-        print(f"   Group {i}: {group.country} - {len(group.links)} links")
-    
-    return DashboardResponse(
-        groups=groups,
-        last_updated=datetime.now().isoformat()
-    )
+        # Use the user's wiki_url from their profile
+        wiki_url = current_user.get('wiki_url')
+
+        if not wiki_url:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User does not have a wiki URL configured"
+            )
+
+        print(f"\n[DEBUG] Dashboard request for user: {current_user.get('username')}")
+        print(f"[DEBUG] Wiki URL: {wiki_url}")
+
+        # Extract project ID and wiki page name from URL
+        # URL format: http://mint.systemhaus.com.br:9070/document-group/customer_-a.buhler/-/wikis/Customer_Links
+        parts = wiki_url.split('/')
+        if len(parts) < 6:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid wiki URL format: {wiki_url}"
+            )
+
+        project_path = '/'.join(parts[3:5])  # document-group/customer_-a.buhler
+        wiki_page = parts[-1]  # Customer_Links
+
+        # Build GitLab API URL
+        # First, URL encode the project path
+        import urllib.parse
+        project_path_encoded = urllib.parse.quote(project_path, safe='')
+
+        base_url = f"{parts[0]}//{parts[2]}"  # http://mint.systemhaus.com.br:9070
+        api_url = f"{base_url}/api/v4/projects/{project_path_encoded}/wikis/{wiki_page}"
+
+        print(f"[DEBUG] API URL: {api_url}")
+
+        # Check cache first
+        cached = get_cached_content(api_url)
+
+        if cached:
+            print("[OK] Using cached content")
+            content = cached
+        else:
+            print("[FETCH] Fetching fresh content from GitLab API...")
+            # Fetch from API
+            content = await fetch_wiki_content(api_url, current_user.get('mint_session'))
+            print(f"[DEBUG] Received {len(content)} bytes from API")
+            cache_content(api_url, content)
+
+        # Parse JSON response from GitLab API
+        import json
+        try:
+            wiki_data = json.loads(content)
+            markdown_text = wiki_data.get('content', '')
+            print(f"[OK] Extracted markdown content ({len(markdown_text)} chars)")
+
+            # Save for debugging
+            with open('debug_markdown.txt', 'w', encoding='utf-8') as f:
+                f.write(markdown_text)
+            print("[SAVE] Saved markdown to debug_markdown.txt")
+
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] Failed to parse JSON: {e}")
+            print(f"[DEBUG] Raw content preview: {content[:500]}")
+            markdown_text = content
+
+        # Parse links
+        groups = parse_markdown_links(markdown_text)
+        print(f"[DEBUG] Found {len(groups)} product groups")
+        for i, group in enumerate(groups, 1):
+            print(f"   Group {i}: {group.product} - {len(group.links)} links")
+
+        return DashboardResponse(
+            groups=groups,
+            last_updated=datetime.now().isoformat()
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Unexpected error in dashboard: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 @app.post("/api/logout")
 async def logout(current_user: dict = Depends(get_current_user)):
@@ -513,9 +768,194 @@ async def clear_cache(current_user: dict = Depends(get_current_user)):
     c.execute('DELETE FROM cache')
     conn.commit()
     conn.close()
-    
-    print("🗑️ Cache cleared!")
+
+    print("[CACHE] Cache cleared!")
     return {"message": "Cache cleared successfully"}
+
+@app.get("/api/users", response_model=UsersListResponse)
+async def list_users(current_user: dict = Depends(get_current_user)):
+    """
+    List all users (admin only)
+    """
+    if not current_user.get('is_admin'):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can list users"
+        )
+
+    users = get_all_users()
+    return UsersListResponse(users=users)
+
+@app.put("/api/users/{username}")
+async def update_user_endpoint(
+    username: str,
+    request: UpdateUserRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update user information (admin only)
+    """
+    if not current_user.get('is_admin'):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can update users"
+        )
+
+    success = update_user(
+        username=username,
+        new_password=request.new_password,
+        wiki_url=request.wiki_url,
+        is_admin=request.is_admin
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to update user"
+        )
+
+    return {"message": "User updated successfully"}
+
+@app.delete("/api/users/{username}")
+async def delete_user_endpoint(
+    username: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Delete user (admin only)
+    """
+    if not current_user.get('is_admin'):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can delete users"
+        )
+
+    # Prevent admin from deleting themselves
+    if username == current_user.get('username'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete your own account"
+        )
+
+    success = delete_user(username)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to delete user"
+        )
+
+    return {"message": "User deleted successfully"}
+
+@app.get("/api/dashboard/{username}", response_model=DashboardResponse)
+async def get_user_dashboard(
+    username: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get dashboard for a specific user (admin only or own dashboard)
+    """
+    # Allow users to view their own dashboard or admin to view any
+    if not current_user.get('is_admin') and username != current_user.get('username'):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this dashboard"
+        )
+
+    # Get the target user's wiki_url and their GitLab session
+    conn = sqlite3.connect('portal.db')
+    c = conn.cursor()
+    c.execute('SELECT wiki_url FROM users WHERE username = ?', (username,))
+    result = c.fetchone()
+
+    if not result:
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    wiki_url = result[0]
+
+    # Get the target user's session (to get their GitLab cookies)
+    # If admin is viewing, use the target user's session, not the admin's
+    c.execute('SELECT mint_session FROM sessions WHERE username = ? ORDER BY created_at DESC LIMIT 1', (username,))
+    session_result = c.fetchone()
+    conn.close()
+
+    mint_session = session_result[0] if session_result else None
+    print(f"[DEBUG] Using GitLab session for user {username}: {bool(mint_session)}")
+
+    if not wiki_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User does not have a wiki URL configured"
+        )
+
+    try:
+        print(f"\n[DEBUG] Dashboard request for user: {username}")
+        print(f"[DEBUG] Wiki URL: {wiki_url}")
+
+        # Extract project ID and wiki page name from URL
+        parts = wiki_url.split('/')
+        if len(parts) < 6:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid wiki URL format: {wiki_url}"
+            )
+
+        project_path = '/'.join(parts[3:5])
+        wiki_page = parts[-1]
+
+        import urllib.parse
+        project_path_encoded = urllib.parse.quote(project_path, safe='')
+
+        base_url = f"{parts[0]}//{parts[2]}"
+        api_url = f"{base_url}/api/v4/projects/{project_path_encoded}/wikis/{wiki_page}"
+
+        print(f"[DEBUG] API URL: {api_url}")
+
+        # Check cache first
+        cached = get_cached_content(api_url)
+
+        if cached:
+            print("[DEBUG] Using cached content")
+            content = cached
+        else:
+            print("[DEBUG] Fetching fresh content from GitLab API...")
+            content = await fetch_wiki_content(api_url, mint_session)
+            print(f"[DEBUG] Received {len(content)} bytes from API")
+            cache_content(api_url, content)
+
+        # Parse JSON response from GitLab API
+        import json
+        try:
+            wiki_data = json.loads(content)
+            markdown_text = wiki_data.get('content', '')
+            print(f"[DEBUG] Extracted markdown content ({len(markdown_text)} chars)")
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] Failed to parse JSON: {e}")
+            print(f"[DEBUG] Raw content preview: {content[:500]}")
+            markdown_text = content
+
+        # Parse links
+        groups = parse_markdown_links(markdown_text)
+        print(f"[DEBUG] Found {len(groups)} product groups")
+
+        return DashboardResponse(
+            groups=groups,
+            last_updated=datetime.now().isoformat()
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Unexpected error in dashboard: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 @app.get("/api/health")
 async def health_check():

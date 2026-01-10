@@ -1,0 +1,307 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+
+const API_BASE_URL = 'http://localhost:8000';
+
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState(null);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [dashboardData, setDashboardData] = useState(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [wikiUrl, setWikiUrl] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingUser, setEditingUser] = useState(null);
+
+  useEffect(() => {
+    // Check if token exists in localStorage
+    const savedToken = localStorage.getItem('auth_token');
+    if (savedToken) {
+      setToken(savedToken);
+      setIsLoggedIn(true);
+      fetchDashboard(savedToken);
+    }
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Login failed. Please check your credentials.');
+      }
+
+      const data = await response.json();
+      setToken(data.token);
+      setIsLoggedIn(true);
+      setIsAdmin(data.is_admin);
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('is_admin', data.is_admin);
+      localStorage.setItem('current_username', data.username);
+
+      // Fetch users list if admin
+      if (data.is_admin) {
+        await fetchUsers(data.token);
+      } else {
+        // Fetch dashboard after login for non-admin
+        await fetchDashboard(data.token, data.username);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password,
+          wiki_url: wikiUrl,
+          is_admin: false,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Registration failed.');
+      }
+
+      const data = await response.json();
+      setToken(data.token);
+      setIsLoggedIn(true);
+      setIsAdmin(false);
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('is_admin', 'false');
+      localStorage.setItem('current_username', data.username);
+
+      // Fetch dashboard after registration
+      await fetchDashboard(data.token, data.username);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDashboard = async (authToken) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Failed to fetch dashboard (${response.status})`);
+      }
+
+      const data = await response.json();
+      setDashboardData(data);
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setToken(null);
+    setDashboardData(null);
+    localStorage.removeItem('auth_token');
+  };
+
+  const handleRefresh = async () => {
+    if (token) {
+      // Clear cache first
+      try {
+        await fetch(`${API_BASE_URL}/api/clear-cache`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+      } catch (err) {
+        console.log('Cache clear failed:', err);
+      }
+      
+      // Then fetch dashboard
+      fetchDashboard(token);
+    }
+  };
+
+  const openLink = (url) => {
+    window.open(url, '_blank');
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="login-container">
+        <div className="login-box">
+          <div className="login-header">
+            <h1>🔐 Synks</h1>
+            <p>{isRegistering ? 'Create your account' : 'Access your systems dashboard'}</p>
+          </div>
+
+          <form onSubmit={isRegistering ? handleRegister : handleLogin} className="login-form">
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            {isRegistering && (
+              <div className="form-group">
+                <label htmlFor="wikiUrl">Wiki URL</label>
+                <input
+                  type="url"
+                  id="wikiUrl"
+                  value={wikiUrl}
+                  onChange={(e) => setWikiUrl(e.target.value)}
+                  placeholder="http://mint.systemhaus.com.br:9070/document-group/customer_yourcompany/-/wikis/Customer_Links"
+                  required
+                />
+                <small>Enter your company's wiki URL from your administrator</small>
+              </div>
+            )}
+
+            {error && <div className="error-message">{error}</div>}
+
+            <button type="submit" disabled={loading} className="login-button">
+              {loading ? (isRegistering ? 'Creating account...' : 'Logging in...') : (isRegistering ? 'Register' : 'Login')}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setError('');
+              }}
+              className="toggle-mode-button"
+            >
+              {isRegistering ? 'Already have an account? Login' : 'Need an account? Register'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-container">
+      <header className="dashboard-header">
+        <div className="header-content">
+          <h1>📊 Synks Dashboard</h1>
+          <div className="header-actions">
+            <button onClick={handleRefresh} className="refresh-button">
+              🔄 Refresh
+            </button>
+            <button onClick={handleLogout} className="logout-button">
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="dashboard-main">
+        {loading && <div className="loading">Loading...</div>}
+
+        {error && <div className="error-message">{error}</div>}
+
+        {dashboardData && (
+          <div className="dashboard-content">
+            <div className="dashboard-info">
+              <p>Last updated: {new Date(dashboardData.last_updated).toLocaleString()}</p>
+            </div>
+
+            {dashboardData.groups.map((group, groupIndex) => (
+              <div key={groupIndex} className="product-group">
+                <div className="group-header">
+                  <h2>{group.product}</h2>
+                  {group.environment && (
+                    <span className="environment-badge">{group.environment}</span>
+                  )}
+                </div>
+
+                <div className="links-grid">
+                  {group.links.map((link, linkIndex) => (
+                    <button
+                      key={linkIndex}
+                      className="link-card"
+                      onClick={() => openLink(link.url)}
+                    >
+                      <span className="link-icon">🔗</span>
+                      <span className="link-name">{link.name}</span>
+                      <span className="link-arrow">→</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {dashboardData.groups.length === 0 && (
+              <div className="empty-state">
+                <p>No links found. Please check your wiki configuration.</p>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App;
