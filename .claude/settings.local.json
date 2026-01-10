@@ -15,7 +15,8 @@
       "Bash(powershell.exe -Command \"Stop-Process -Id 16712 -Force\")",
       "Bash(powershell.exe -Command \"Stop-Process -Id 25208 -Force\")",
       "Bash(powershell.exe -Command \"Stop-Process -Id 10720 -Force\")",
-      "Bash(powershell.exe -Command \"Stop-Process -Id 31528 -Force\")"
+      "Bash(powershell.exe -Command \"Stop-Process -Id 31528 -Force\")",
+      "Bash(sqlite3:*)"
     ]
   }
 }

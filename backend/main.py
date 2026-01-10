@@ -243,20 +243,20 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
             initial_cookies = dict(response.cookies)
             print(f"[COOKIE] Initial cookies: {list(initial_cookies.keys())}")
             
-            # Step 2: Submit login form (LDAP)
+            # Step 2: Try LDAP login first
             ldap_login_url = f"{mint_url}/users/auth/ldapmain/callback"
-            
-            login_data = {
+
+            login_data_ldap = {
                 'username': username,
                 'password': password,
                 'authenticity_token': csrf_token,
                 'remember_me': '0'
             }
-            
+
             print(f"[AUTH] Attempting LDAP login for user: {username}")
             auth_response = await client.post(
                 ldap_login_url,
-                data=login_data,
+                data=login_data_ldap,
                 headers={
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Referer': login_url
@@ -264,18 +264,47 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
                 cookies=initial_cookies
             )
 
-            print(f"[AUTH] Login response status: {auth_response.status_code}")
-            print(f"[DEBUG] Final URL after login: {auth_response.url}")
-            
+            print(f"[AUTH] LDAP login response status: {auth_response.status_code}")
+            print(f"[DEBUG] Final URL after LDAP login: {auth_response.url}")
+
+            # Check if LDAP login failed (redirected back to sign_in)
+            ldap_failed = '/users/sign_in' in str(auth_response.url)
+
+            if ldap_failed:
+                print("[WARN] LDAP login failed, trying Standard login...")
+
+                # Try Standard login
+                standard_login_url = f"{mint_url}/users/sign_in"
+
+                login_data_standard = {
+                    'user[login]': username,
+                    'user[password]': password,
+                    'authenticity_token': csrf_token,
+                    'user[remember_me]': '0'
+                }
+
+                print(f"[AUTH] Attempting Standard login for user: {username}")
+                auth_response = await client.post(
+                    standard_login_url,
+                    data=login_data_standard,
+                    headers={
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Referer': login_url
+                    },
+                    cookies=initial_cookies
+                )
+
+                print(f"[AUTH] Standard login response status: {auth_response.status_code}")
+                print(f"[DEBUG] Final URL after Standard login: {auth_response.url}")
+
+                # Check if Standard login also failed
+                if '/users/sign_in' in str(auth_response.url):
+                    print("[ERROR] Both LDAP and Standard login failed")
+                    return None
+
             # Collect all cookies from the entire redirect chain
             all_cookies = dict(client.cookies)
             print(f"[COOKIE] All cookies after login: {list(all_cookies.keys())}")
-            
-            # Check if we have a session cookie
-            if '_gitlab_session' in all_cookies:
-                print(f"[OK] Login successful! Found session cookie")
-                cookie_str = '; '.join([f"{k}={v}" for k, v in all_cookies.items()])
-                return cookie_str
             
             # Try to access a protected page to verify
             test_url = f"{mint_url}/dashboard/projects"
@@ -896,7 +925,8 @@ async def get_user_dashboard(
         print(f"\n[DEBUG] Dashboard request for user: {username}")
         print(f"[DEBUG] Wiki URL: {wiki_url}")
 
-        # Extract project ID and wiki page name from URL
+        # Extract project ID and wiki page name from URL to use GitLab API
+        # URL format: http://mint.../document-group/customer_luizfuga/-/wikis/Customer_Links
         parts = wiki_url.split('/')
         if len(parts) < 6:
             raise HTTPException(
@@ -904,8 +934,8 @@ async def get_user_dashboard(
                 detail=f"Invalid wiki URL format: {wiki_url}"
             )
 
-        project_path = '/'.join(parts[3:5])
-        wiki_page = parts[-1]
+        project_path = '/'.join(parts[3:5])  # document-group/customer_luizfuga
+        wiki_page = parts[-1]  # Customer_Links
 
         import urllib.parse
         project_path_encoded = urllib.parse.quote(project_path, safe='')
@@ -913,7 +943,7 @@ async def get_user_dashboard(
         base_url = f"{parts[0]}//{parts[2]}"
         api_url = f"{base_url}/api/v4/projects/{project_path_encoded}/wikis/{wiki_page}"
 
-        print(f"[DEBUG] API URL: {api_url}")
+        print(f"[DEBUG] Using GitLab API URL: {api_url}")
 
         # Check cache first
         cached = get_cached_content(api_url)
@@ -922,7 +952,7 @@ async def get_user_dashboard(
             print("[DEBUG] Using cached content")
             content = cached
         else:
-            print("[DEBUG] Fetching fresh content from GitLab API...")
+            print("[DEBUG] Fetching content from GitLab API...")
             content = await fetch_wiki_content(api_url, mint_session)
             print(f"[DEBUG] Received {len(content)} bytes from API")
             cache_content(api_url, content)
@@ -933,10 +963,15 @@ async def get_user_dashboard(
             wiki_data = json.loads(content)
             markdown_text = wiki_data.get('content', '')
             print(f"[DEBUG] Extracted markdown content ({len(markdown_text)} chars)")
+            if markdown_text:
+                print(f"[DEBUG] First 200 chars: {markdown_text[:200]}")
         except json.JSONDecodeError as e:
-            print(f"[ERROR] Failed to parse JSON: {e}")
-            print(f"[DEBUG] Raw content preview: {content[:500]}")
-            markdown_text = content
+            print(f"[ERROR] Failed to parse JSON from API: {e}")
+            print(f"[DEBUG] Response preview: {content[:500]}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to parse wiki content from GitLab API"
+            )
 
         # Parse links
         groups = parse_markdown_links(markdown_text)
