@@ -297,6 +297,8 @@ html {
     radial-gradient(ellipse at top, rgba(227, 30, 36, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at bottom right, rgba(0, 102, 204, 0.08) 0%, transparent 50%);
   overflow: hidden;
+  z-index: 1;
+  will-change: transform;
 }
 
 .hero-section::before,
@@ -309,6 +311,7 @@ html {
   filter: blur(100px);
   opacity: 0.3;
   animation: float 20s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .hero-section::before {
@@ -316,6 +319,7 @@ html {
   top: -200px;
   left: -200px;
   animation-delay: 0s;
+  z-index: 0;
 }
 
 .hero-section::after {
@@ -323,6 +327,7 @@ html {
   bottom: -200px;
   right: -200px;
   animation-delay: 10s;
+  z-index: 0;
 }
 
 @keyframes float {
@@ -508,6 +513,9 @@ html {
   padding: 8rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  z-index: 10;
+  background: #0a0a0f;
 }
 
 .section-header {
@@ -605,6 +613,9 @@ html {
   padding: 8rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  z-index: 10;
+  background: #0a0a0f;
 }
 
 .pricing-grid {
@@ -747,6 +758,8 @@ html {
   padding: 4rem 2rem 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
 }
 
 .footer-content {

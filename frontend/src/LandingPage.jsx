@@ -15,7 +15,15 @@ const LandingPage = ({ onNavigateToLogin }) => {
 
     // Scroll parallax effect
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      // Limit parallax to hero section only
+      const heroHeight = window.innerHeight;
+      const currentScroll = window.scrollY;
+
+      if (currentScroll < heroHeight) {
+        setScrollY(currentScroll);
+      } else {
+        setScrollY(heroHeight);
+      }
 
       // Scroll reveal
       const featuresSection = document.querySelector('.features-section');
@@ -76,7 +84,7 @@ const LandingPage = ({ onNavigateToLogin }) => {
       </nav>
 
       {/* Hero Section */}
-      <section className="hero-section" style={{ transform: `translateY(${scrollY * 0.5}px)` }}>
+      <section className="hero-section" style={{ transform: `translateY(${scrollY * 0.3}px)` }}>
         <div className="hero-badge slide-up" style={{ animationDelay: '0.1s' }}>
           <span className="badge-icon">✦</span>
           <span>35+ years serving the leather industry</span>
