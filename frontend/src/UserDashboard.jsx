@@ -82,19 +82,17 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
           </div>
         </div>
         <div className="header-right">
-          <button className="header-btn" onClick={handleRefresh} title="Refresh Dashboard">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button className="header-btn refresh-btn" onClick={handleRefresh} title="Refresh Dashboard">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="1 4 1 10 7 10"/>
               <polyline points="23 20 23 14 17 14"/>
-              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/>
+              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 03.51 15"/>
             </svg>
-            Refresh
           </button>
-          <button className="header-btn logout" onClick={onLogout}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button className="header-btn logout-btn" onClick={onLogout} title="Logout">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
             </svg>
-            Logout
           </button>
         </div>
       </header>

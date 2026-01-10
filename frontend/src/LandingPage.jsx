@@ -36,9 +36,9 @@ const LandingPage = ({ onNavigateToLogin }) => {
         </h1>
 
         <p className="hero-subtitle">
-          Streamline access to your Antara ERP environments. Synks centralizes
+          Streamline access to your Antara ERP environments.
           <br />
-          all customer links, wikis, and resources in one secure portal.
+          Synks centralizes all customer links, wikis, and resources in one secure portal.
         </p>
 
         <div className="hero-cta">

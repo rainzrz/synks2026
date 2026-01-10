@@ -54,60 +54,45 @@
 }
 
 .header-btn {
-  width: 40px;
-  height: 40px;
+  width: auto;
+  height: auto;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .header-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
 }
 
 .header-btn.user-btn {
-  background: rgba(0, 102, 204, 0.1);
-  border-color: rgba(0, 102, 204, 0.3);
   color: #0066CC;
 }
 
 .header-btn.user-btn:hover {
-  background: rgba(0, 102, 204, 0.2);
-  border-color: rgba(0, 102, 204, 0.5);
-  color: #0066CC;
+  color: #0088FF;
 }
 
 .header-btn.refresh-btn {
-  background: rgba(0, 102, 204, 0.1);
-  border-color: rgba(0, 102, 204, 0.3);
   color: #0066CC;
 }
 
 .header-btn.refresh-btn:hover {
-  background: rgba(0, 102, 204, 0.2);
-  border-color: rgba(0, 102, 204, 0.5);
-  color: #0066CC;
+  color: #0088FF;
 }
 
 .header-btn.logout-btn {
-  background: rgba(227, 30, 36, 0.1);
-  border-color: rgba(227, 30, 36, 0.3);
   color: #E31E24;
 }
 
 .header-btn.logout-btn:hover {
-  background: rgba(227, 30, 36, 0.2);
-  border-color: rgba(227, 30, 36, 0.5);
-  color: #E31E24;
+  color: #FF4444;
 }
 
 /* Main Content */
@@ -265,13 +250,13 @@
 
 .card-env {
   padding: 0.35rem 0.85rem;
-  background: linear-gradient(135deg, rgba(227, 30, 36, 0.15), rgba(0, 102, 204, 0.15));
-  border: 1px solid rgba(227, 30, 36, 0.3);
+  background: linear-gradient(135deg, #E31E24, #0066CC);
+  border: none;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: #E31E24;
+  color: #ffffff;
   text-transform: uppercase;
 }
 

@@ -230,12 +230,12 @@
   margin-bottom: 1.5rem;
 }
 
-.gradient-1 { background: linear-gradient(135deg, #60efff, #0061ff); }
-.gradient-2 { background: linear-gradient(135deg, #0061ff, #ff2e8d); }
-.gradient-3 { background: linear-gradient(135deg, #ff2e8d, #ff9a56); }
-.gradient-4 { background: linear-gradient(135deg, #ff9a56, #ffd56b); }
-.gradient-5 { background: linear-gradient(135deg, #ffd56b, #60efff); }
-.gradient-6 { background: linear-gradient(135deg, #60efff, #ff2e8d); }
+.gradient-1 { background: linear-gradient(135deg, #E31E24, #0066CC); }
+.gradient-2 { background: linear-gradient(135deg, #E31E24, #0066CC); }
+.gradient-3 { background: linear-gradient(135deg, #E31E24, #0066CC); }
+.gradient-4 { background: linear-gradient(135deg, #E31E24, #0066CC); }
+.gradient-5 { background: linear-gradient(135deg, #E31E24, #0066CC); }
+.gradient-6 { background: linear-gradient(135deg, #E31E24, #0066CC); }
 
 .feature-card h3 {
   font-size: 1.5rem;
@@ -279,8 +279,8 @@
 }
 
 .pricing-card.featured {
-  background: rgba(96, 239, 255, 0.05);
-  border: 2px solid rgba(96, 239, 255, 0.3);
+  background: rgba(227, 30, 36, 0.05);
+  border: 2px solid rgba(227, 30, 36, 0.3);
 }
 
 .popular-badge {
@@ -289,7 +289,7 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 0.4rem 1.2rem;
-  background: linear-gradient(135deg, #60efff, #0061ff);
+  background: linear-gradient(135deg, #E31E24, #0066CC);
   border-radius: 50px;
   font-size: 0.75rem;
   font-weight: 700;
@@ -356,7 +356,7 @@
 }
 
 .pricing-card.featured .pricing-btn {
-  background: linear-gradient(135deg, #60efff, #0061ff);
+  background: linear-gradient(135deg, #E31E24, #0066CC);
   border: none;
 }
 

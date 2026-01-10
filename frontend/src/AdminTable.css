@@ -5,7 +5,7 @@
   background: #0a0a0f;
   color: #ffffff;
   padding: 0.5rem 1rem;
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Courier New', monospace;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* Header */
@@ -47,7 +47,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #0066CC;
+  background: #00ff88;
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -108,7 +108,6 @@
   font-size: 2rem;
   font-weight: 700;
   color: #0066CC;
-  font-family: 'SF Mono', monospace;
 }
 
 /* Table Controls */
@@ -143,7 +142,6 @@
   border-radius: 10px;
   color: #ffffff;
   font-size: 0.95rem;
-  font-family: 'SF Mono', monospace;
   transition: all 0.3s ease;
 }
 
@@ -178,7 +176,6 @@
   letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'SF Mono', monospace;
   text-transform: uppercase;
 }
 
@@ -207,7 +204,6 @@
   align-items: center;
   gap: 0.5rem;
   text-transform: uppercase;
-  font-family: 'SF Mono', monospace;
 }
 
 .btn-new-user:hover {
@@ -328,7 +324,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #0066CC;
+  background: #00ff88;
 }
 
 /* Last Login */
