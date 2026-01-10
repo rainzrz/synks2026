@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LoginPage.css';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -8,6 +8,12 @@ const LoginPage = ({ onLoginSuccess, onNavigateToLanding }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Initial loading animation
+    setTimeout(() => setIsLoading(false), 800);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -40,8 +46,22 @@ const LoginPage = ({ onLoginSuccess, onNavigateToLanding }) => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-content">
+          <div className="loading-logo">
+            <span className="logo-text">synks</span>
+            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', marginLeft: '0.5rem' }}>by Systemhaus</span>
+          </div>
+          <div className="loading-spinner"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="login-page">
+    <div className="login-page animate-in">
       {/* Background Effects */}
       <div className="login-bg">
         <div className="gradient-orb orb-1"></div>
@@ -50,7 +70,7 @@ const LoginPage = ({ onLoginSuccess, onNavigateToLanding }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="login-nav">
+      <nav className="login-nav slide-down">
         <div className="nav-container">
           <div className="nav-logo" onClick={onNavigateToLanding} style={{ cursor: 'pointer' }}>
             <span className="logo-text">synks</span>
@@ -67,19 +87,19 @@ const LoginPage = ({ onLoginSuccess, onNavigateToLanding }) => {
 
       {/* Login Form */}
       <div className="login-container">
-        <div className="login-card">
+        <div className="login-card fade-in-scale" style={{ animationDelay: '0.2s' }}>
           <div className="login-header">
-            <div className="login-icon">
+            <div className="login-icon scale-bounce" style={{ animationDelay: '0.3s' }}>
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0110 0v4"/>
               </svg>
             </div>
-            <h1>Welcome Back</h1>
-            <p>Sign in with your GitLab credentials</p>
+            <h1 className="fade-in-up" style={{ animationDelay: '0.4s' }}>Welcome Back</h1>
+            <p className="fade-in-up" style={{ animationDelay: '0.5s' }}>Sign in with your GitLab credentials</p>
           </div>
 
-          <form onSubmit={handleLogin} className="login-form">
+          <form onSubmit={handleLogin} className="login-form fade-in-up" style={{ animationDelay: '0.6s' }}>
             {error && (
               <div className="error-message">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -158,7 +178,7 @@ const LoginPage = ({ onLoginSuccess, onNavigateToLanding }) => {
         </div>
 
         <div className="login-info">
-          <div className="info-card">
+          <div className="info-card stagger-slide" style={{ animationDelay: '0.7s' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
@@ -166,7 +186,7 @@ const LoginPage = ({ onLoginSuccess, onNavigateToLanding }) => {
             <p>Your credentials are encrypted and never stored on our servers.</p>
           </div>
 
-          <div className="info-card">
+          <div className="info-card stagger-slide" style={{ animationDelay: '0.8s' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
@@ -174,7 +194,7 @@ const LoginPage = ({ onLoginSuccess, onNavigateToLanding }) => {
             <p>Instant access to all your GitLab wikis and documentation.</p>
           </div>
 
-          <div className="info-card">
+          <div className="info-card stagger-slide" style={{ animationDelay: '0.9s' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>
