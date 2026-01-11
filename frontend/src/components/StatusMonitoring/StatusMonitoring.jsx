@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import './StatusMonitoring.css';
-
-const API_BASE_URL = 'http://localhost:8000';
+import StatusHeader from './StatusHeader';
+import StatusStats from './StatusStats';
+import StatusFilters from './StatusFilters';
+import StatusItem from './StatusItem';
+import { groupLinksByProductAndEnv, calculateStatusCounts, calculateUptime } from './statusUtils.jsx';
+import { api } from '../../utils/api';
 
 const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
   const [linkStatuses, setLinkStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, online, offline, warning
-  const [expandedGroups, setExpandedGroups] = useState({}); // Track which product/env groups are expanded
+  const [filter, setFilter] = useState('all');
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   // Safety check for props
   if (!token || !currentUsername) {
@@ -46,20 +50,14 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
   const fetchStatuses = async () => {
     try {
       setLoading(true);
-      const endpoint = isAdmin
-        ? '/api/status/links'
-        : `/api/status/links/${currentUsername}`;
+      const data = isAdmin
+        ? await api.getAllLinkStatuses(token)
+        : await api.getUserLinkStatuses(token, currentUsername);
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setLinkStatuses(data.links || []);
-        setLastUpdate(new Date());
-      }
+      setLinkStatuses(data.links || []);
+      setLastUpdate(new Date());
     } catch (err) {
+      // Error handled silently
     } finally {
       setLoading(false);
     }
@@ -67,95 +65,15 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
 
   const pingLink = async (linkId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/status/ping/${linkId}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Update the specific link status
-        setLinkStatuses(prev => prev.map(link =>
-          link.id === linkId ? { ...link, ...data } : link
-        ));
-      }
+      const data = await api.pingLink(token, linkId);
+      // Update the specific link status
+      setLinkStatuses(prev => prev.map(link =>
+        link.id === linkId ? { ...link, ...data } : link
+      ));
     } catch (err) {
+      // Error handled silently
     }
   };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'online': return '#00ff88';
-      case 'offline': return '#E31E24';
-      case 'warning': return '#FFA500';
-      default: return 'rgba(255, 255, 255, 0.3)';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'online':
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        );
-      case 'offline':
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-          </svg>
-        );
-      case 'warning':
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        );
-      default:
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/>
-          </svg>
-        );
-    }
-  };
-
-  const filteredLinks = linkStatuses.filter(link => {
-    if (filter === 'all') return true;
-    return link.status === filter;
-  });
-
-  // Group links by product and environment
-  const groupedLinks = filteredLinks.reduce((groups, link) => {
-    const productKey = link.product || 'Uncategorized';
-    const envKey = link.environment || 'Default';
-
-    if (!groups[productKey]) {
-      groups[productKey] = {};
-    }
-    if (!groups[productKey][envKey]) {
-      groups[productKey][envKey] = [];
-    }
-    groups[productKey][envKey].push(link);
-
-    return groups;
-  }, {});
-
-  const statusCounts = {
-    online: linkStatuses.filter(l => l.status === 'online').length,
-    offline: linkStatuses.filter(l => l.status === 'offline').length,
-    warning: linkStatuses.filter(l => l.status === 'warning').length,
-    total: linkStatuses.length
-  };
-
-  const uptime = linkStatuses.length > 0
-    ? ((statusCounts.online / linkStatuses.length) * 100).toFixed(1)
-    : 0;
 
   // Toggle group expansion
   const toggleGroup = (productKey, envKey) => {
@@ -167,14 +85,18 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
   };
 
   // Calculate status counts for an environment
-  const getEnvStatusCounts = (links) => {
-    return {
-      online: links.filter(l => l.status === 'online').length,
-      offline: links.filter(l => l.status === 'offline').length,
-      warning: links.filter(l => l.status === 'warning').length,
-      total: links.length
-    };
-  };
+  const getEnvStatusCounts = (links) => calculateStatusCounts(links);
+
+  // Filter links
+  const filteredLinks = linkStatuses.filter(link => {
+    if (filter === 'all') return true;
+    return link.status === filter;
+  });
+
+  // Group links
+  const groupedLinks = groupLinksByProductAndEnv(filteredLinks);
+  const statusCounts = calculateStatusCounts(linkStatuses);
+  const uptime = calculateUptime(linkStatuses);
 
   if (loading && linkStatuses.length === 0) {
     return (
@@ -187,129 +109,20 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
 
   return (
     <div className="status-monitoring">
-      {/* Header */}
-      <div className="status-header">
-        <div className="header-content">
-          <h1 className="status-title">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-            Link Status Monitoring
-          </h1>
-          <p className="status-subtitle">Real-time health checks and uptime tracking</p>
-        </div>
+      <StatusHeader
+        autoRefresh={autoRefresh}
+        onAutoRefreshChange={setAutoRefresh}
+        onRefresh={fetchStatuses}
+        loading={loading}
+      />
 
-        <div className="status-controls">
-          <div className="auto-refresh-toggle">
-            <input
-              type="checkbox"
-              id="auto-refresh"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-            />
-            <label htmlFor="auto-refresh">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="1 4 1 10 7 10"/>
-                <polyline points="23 20 23 14 17 14"/>
-                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 0 3.51 15"/>
-              </svg>
-              Auto-refresh
-            </label>
-          </div>
+      <StatusStats statusCounts={statusCounts} uptime={uptime} />
 
-          <button className="refresh-all-btn" onClick={fetchStatuses} disabled={loading}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="1 4 1 10 7 10"/>
-              <polyline points="23 20 23 14 17 14"/>
-              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 0 3.51 15"/>
-            </svg>
-            Refresh All
-          </button>
-        </div>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="status-stats-grid">
-        <div className="status-stat-card">
-          <div className="stat-icon-wrapper" style={{ background: 'linear-gradient(135deg, #00ff88, #00cc6a)' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <div className="stat-content">
-            <p className="stat-label">Online</p>
-            <h2 className="stat-value">{statusCounts.online}</h2>
-          </div>
-        </div>
-
-        <div className="status-stat-card">
-          <div className="stat-icon-wrapper" style={{ background: 'linear-gradient(135deg, #E31E24, #b01118)' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="15" y1="9" x2="9" y2="15"/>
-              <line x1="9" y1="9" x2="15" y2="15"/>
-            </svg>
-          </div>
-          <div className="stat-content">
-            <p className="stat-label">Offline</p>
-            <h2 className="stat-value">{statusCounts.offline}</h2>
-          </div>
-        </div>
-
-        <div className="status-stat-card">
-          <div className="stat-icon-wrapper" style={{ background: 'linear-gradient(135deg, #FFA500, #cc8400)' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-          </div>
-          <div className="stat-content">
-            <p className="stat-label">Warning</p>
-            <h2 className="stat-value">{statusCounts.warning}</h2>
-          </div>
-        </div>
-
-        <div className="status-stat-card">
-          <div className="stat-icon-wrapper" style={{ background: 'linear-gradient(135deg, #0066CC, #004c99)' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </div>
-          <div className="stat-content">
-            <p className="stat-label">Uptime</p>
-            <h2 className="stat-value">{uptime}%</h2>
-          </div>
-        </div>
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="status-filters">
-        <button
-          className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          All Links ({statusCounts.total})
-        </button>
-        <button
-          className={`filter-btn ${filter === 'online' ? 'active' : ''}`}
-          onClick={() => setFilter('online')}
-        >
-          Online ({statusCounts.online})
-        </button>
-        <button
-          className={`filter-btn ${filter === 'offline' ? 'active' : ''}`}
-          onClick={() => setFilter('offline')}
-        >
-          Offline ({statusCounts.offline})
-        </button>
-        <button
-          className={`filter-btn ${filter === 'warning' ? 'active' : ''}`}
-          onClick={() => setFilter('warning')}
-        >
-          Warning ({statusCounts.warning})
-        </button>
-      </div>
+      <StatusFilters
+        filter={filter}
+        onFilterChange={setFilter}
+        statusCounts={statusCounts}
+      />
 
       {/* Links Status List - Grouped by Product/Environment */}
       <div className="status-list">
@@ -389,52 +202,13 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
                     </div>
 
                     {isExpanded && links.map((link, idx) => (
-                    <div key={`${link.id}-${idx}`} className="status-item" style={{ animationDelay: `${idx * 0.05}s` }}>
-                      <div className="status-indicator" style={{ background: getStatusColor(link.status) }}>
-                        <div className="status-pulse" style={{ background: getStatusColor(link.status) }}></div>
-                      </div>
-
-                      <div className="status-info">
-                        <div className="status-main">
-                          <h3 className="link-name">{link.name || link.url}</h3>
-                          <span className="status-badge" style={{ color: getStatusColor(link.status) }}>
-                            {getStatusIcon(link.status)}
-                            {link.status}
-                          </span>
-                        </div>
-
-                        <div className="status-details">
-                          <span className="status-url">{link.url}</span>
-                          <div className="status-metrics">
-                            <span className="metric">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
-                              </svg>
-                              {link.responseTime || '--'}ms
-                            </span>
-                            <span className="metric">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                                <polyline points="17 6 23 6 23 12"/>
-                              </svg>
-                              {link.uptime || '--'}% uptime
-                            </span>
-                            <span className="metric">
-                              Last checked: {link.lastChecked ? new Date(link.lastChecked).toLocaleTimeString() : 'Never'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button className="ping-btn" onClick={() => pingLink(link.id)} title="Ping now">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="2"/>
-                          <path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"/>
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
+                      <StatusItem
+                        key={`${link.id}-${idx}`}
+                        link={link}
+                        idx={idx}
+                        onPing={pingLink}
+                      />
+                    ))}
                   </div>
                 );
               })}
