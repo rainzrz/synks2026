@@ -9,6 +9,7 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [filter, setFilter] = useState('all'); // all, online, offline, warning
+  const [expandedGroups, setExpandedGroups] = useState({}); // Track which product/env groups are expanded
 
   // Safety check for props
   if (!token || !currentUsername) {
@@ -157,6 +158,25 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
   const uptime = linkStatuses.length > 0
     ? ((statusCounts.online / linkStatuses.length) * 100).toFixed(1)
     : 0;
+
+  // Toggle group expansion
+  const toggleGroup = (productKey, envKey) => {
+    const key = `${productKey}-${envKey}`;
+    setExpandedGroups(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Calculate status counts for an environment
+  const getEnvStatusCounts = (links) => {
+    return {
+      online: links.filter(l => l.status === 'online').length,
+      offline: links.filter(l => l.status === 'offline').length,
+      warning: links.filter(l => l.status === 'warning').length,
+      total: links.length
+    };
+  };
 
   if (loading && linkStatuses.length === 0) {
     return (
@@ -310,11 +330,67 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
                 <h2 className="group-title">{product}</h2>
               </div>
 
-              {Object.entries(environments).map(([environment, links]) => (
-                <div key={`${product}-${environment}`} className="environment-section">
-                  <h3 className="environment-title">{environment}</h3>
+              {Object.entries(environments).map(([environment, links]) => {
+                const groupKey = `${product}-${environment}`;
+                const isExpanded = expandedGroups[groupKey];
+                const envCounts = getEnvStatusCounts(links);
 
-                  {links.map((link, idx) => (
+                return (
+                  <div key={groupKey} className="environment-section">
+                    <div
+                      className="environment-header"
+                      onClick={() => toggleGroup(product, environment)}
+                    >
+                      <div className="env-title-wrapper">
+                        <svg
+                          className="collapse-icon"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          style={{
+                            transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease'
+                          }}
+                        >
+                          <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                        <h3 className="environment-title">{environment}</h3>
+                      </div>
+
+                      <div className="env-status-indicators">
+                        {envCounts.online > 0 && (
+                          <span className="env-badge online">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            {envCounts.online}
+                          </span>
+                        )}
+                        {envCounts.offline > 0 && (
+                          <span className="env-badge offline">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="6" x2="6" y2="18"/>
+                              <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            {envCounts.offline}
+                          </span>
+                        )}
+                        {envCounts.warning > 0 && (
+                          <span className="env-badge warning">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            </svg>
+                            {envCounts.warning}
+                          </span>
+                        )}
+                        <span className="env-total">{envCounts.total} links</span>
+                      </div>
+                    </div>
+
+                    {isExpanded && links.map((link, idx) => (
                     <div key={`${link.id}-${idx}`} className="status-item" style={{ animationDelay: `${idx * 0.05}s` }}>
                       <div className="status-indicator" style={{ background: getStatusColor(link.status) }}>
                         <div className="status-pulse" style={{ background: getStatusColor(link.status) }}></div>
@@ -361,8 +437,9 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
                       </button>
                     </div>
                   ))}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           ))
         )}
