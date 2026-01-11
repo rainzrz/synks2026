@@ -1049,14 +1049,16 @@ async def get_all_links_from_gitlab_wikis() -> List[dict]:
 
             for group in groups:
                 for link in group.links:
-                    all_links.append({
+                    link_data = {
                         'id': f"{username}_{link.url}",
                         'name': link.text,
                         'url': link.url,
                         'username': username,
                         'product': group.product,
                         'environment': group.environment
-                    })
+                    }
+                    print(f"[DEBUG] Adding link: {link.text} | Product: {group.product} | Env: {group.environment}")
+                    all_links.append(link_data)
         except Exception as e:
             print(f"[ERROR] Failed to get links for user {user['username']}: {e}")
             continue
@@ -1113,13 +1115,15 @@ async def get_user_links_from_gitlab_wiki(username: str) -> List[dict]:
         links = []
         for group in groups:
             for link in group.links:
-                links.append({
+                link_data = {
                     'id': f"{username}_{link.url}",
                     'name': link.text,
                     'url': link.url,
                     'product': group.product,
                     'environment': group.environment
-                })
+                }
+                print(f"[DEBUG] Adding link: {link.text} | Product: {group.product} | Env: {group.environment}")
+                links.append(link_data)
 
         return links
     except Exception as e:
@@ -1146,21 +1150,27 @@ async def get_all_link_statuses(current_user: dict = Depends(get_current_user)):
         async def check_single_link(link):
             try:
                 status_info = await check_link_status(link['url'])
-                return {
+                result = {
                     "id": link['id'],
                     "name": link['name'],
                     "url": link['url'],
+                    "product": link.get('product', 'Uncategorized'),
+                    "environment": link.get('environment', 'Default'),
                     "status": status_info['status'],
                     "responseTime": status_info['response_time'],
                     "uptime": 100 if status_info['status'] == 'online' else 0,
                     "lastChecked": datetime.now().isoformat()
                 }
+                print(f"[DEBUG STATUS] {link['name']}: product={result['product']}, env={result['environment']}")
+                return result
             except Exception as e:
                 print(f"[ERROR] Failed to check status for {link['url']}: {e}")
                 return {
                     "id": link['id'],
                     "name": link['name'],
                     "url": link['url'],
+                    "product": link.get('product', 'Uncategorized'),
+                    "environment": link.get('environment', 'Default'),
                     "status": "unknown",
                     "responseTime": 0,
                     "uptime": 0,
@@ -1171,6 +1181,10 @@ async def get_all_link_statuses(current_user: dict = Depends(get_current_user)):
         link_list = await asyncio.gather(*[check_single_link(link) for link in links])
 
         print(f"[STATUS] Completed checking {len(link_list)} links")
+
+        # Debug: Print first 3 links to verify structure
+        for i, link in enumerate(link_list[:3]):
+            print(f"[FINAL DEBUG] Link {i}: product={link.get('product')}, env={link.get('environment')}, name={link.get('name')}")
 
         return {"links": list(link_list)}
     except Exception as e:
@@ -1203,21 +1217,27 @@ async def get_user_link_statuses(
         async def check_single_link(link):
             try:
                 status_info = await check_link_status(link['url'])
-                return {
+                result = {
                     "id": link['id'],
                     "name": link['name'],
                     "url": link['url'],
+                    "product": link.get('product', 'Uncategorized'),
+                    "environment": link.get('environment', 'Default'),
                     "status": status_info['status'],
                     "responseTime": status_info['response_time'],
                     "uptime": 100 if status_info['status'] == 'online' else 0,
                     "lastChecked": datetime.now().isoformat()
                 }
+                print(f"[DEBUG STATUS] {link['name']}: product={result['product']}, env={result['environment']}")
+                return result
             except Exception as e:
                 print(f"[ERROR] Failed to check status for {link['url']}: {e}")
                 return {
                     "id": link['id'],
                     "name": link['name'],
                     "url": link['url'],
+                    "product": link.get('product', 'Uncategorized'),
+                    "environment": link.get('environment', 'Default'),
                     "status": "unknown",
                     "responseTime": 0,
                     "uptime": 0,
@@ -1228,6 +1248,10 @@ async def get_user_link_statuses(
         link_list = await asyncio.gather(*[check_single_link(link) for link in user_links])
 
         print(f"[STATUS] Completed checking {len(link_list)} links")
+
+        # Debug: Print first 3 links to verify structure
+        for i, link in enumerate(link_list[:3]):
+            print(f"[FINAL DEBUG] Link {i}: product={link.get('product')}, env={link.get('environment')}, name={link.get('name')}")
 
         return {"links": list(link_list)}
     except Exception as e:
