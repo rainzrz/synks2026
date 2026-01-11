@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './UserDashboard.css';
+import StatusMonitoring from './components/StatusMonitoring/StatusMonitoring';
+import OnboardingTour from './components/Onboarding/OnboardingTour';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -9,6 +11,7 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [activeView, setActiveView] = useState('dashboard'); // dashboard, status
 
   useEffect(() => {
     fetchDashboard();
@@ -84,11 +87,32 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
           </div>
         </div>
         <div className="header-right">
+          <button
+            className={`header-btn nav-btn ${activeView === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveView('dashboard')}
+            title="Dashboard"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </button>
+          <button
+            className={`header-btn nav-btn ${activeView === 'status' ? 'active' : ''}`}
+            onClick={() => setActiveView('status')}
+            title="Status Monitoring"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </button>
           <button className="header-btn refresh-btn" onClick={handleRefresh} title="Refresh Dashboard">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="1 4 1 10 7 10"/>
               <polyline points="23 20 23 14 17 14"/>
-              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 03.51 15"/>
+              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 0 3.51 15"/>
             </svg>
           </button>
           <button className="header-btn logout-btn" onClick={onLogout} title="Logout">
@@ -99,9 +123,14 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
         </div>
       </header>
 
+      {/* Onboarding Tour */}
+      <OnboardingTour isAdmin={false} />
+
       {/* Main Content */}
       <div className="user-main">
-        {loading ? (
+        {activeView === 'status' ? (
+          <StatusMonitoring token={token} currentUsername={currentUsername} isAdmin={false} />
+        ) : loading ? (
           <div className="loading-state">
             <div className="spinner-large"></div>
             <p>Loading your dashboard...</p>

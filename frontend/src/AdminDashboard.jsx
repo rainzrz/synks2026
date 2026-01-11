@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import AdminTable from './AdminTable';
 import './AdminDashboard.css';
+import StatusMonitoring from './components/StatusMonitoring/StatusMonitoring';
+import OnboardingTour from './components/Onboarding/OnboardingTour';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -12,6 +14,7 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [activeView, setActiveView] = useState('users'); // users, status
 
   useEffect(() => {
     fetchUsers();
@@ -136,6 +139,26 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
           <h1 className="dashboard-logo">synks <span style={{ fontSize: '0.5em', color: 'rgba(255,255,255,0.4)', marginLeft: '0.5rem' }}>by Systemhaus</span></h1>
         </div>
         <div className="header-right">
+          <button
+            className={`header-btn nav-btn ${activeView === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveView('users')}
+            title="Users"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </button>
+          <button
+            className={`header-btn nav-btn ${activeView === 'status' ? 'active' : ''}`}
+            onClick={() => setActiveView('status')}
+            title="Status Monitoring"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </button>
           <button className="header-btn user-btn" title={currentUsername}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
@@ -146,7 +169,7 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="1 4 1 10 7 10"/>
               <polyline points="23 20 23 14 17 14"/>
-              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 03.51 15"/>
+              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 0 3.51 15"/>
             </svg>
           </button>
           <button className="header-btn logout-btn" onClick={onLogout} title="Logout">
@@ -157,9 +180,14 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
         </div>
       </header>
 
+      {/* Onboarding Tour */}
+      <OnboardingTour isAdmin={true} />
+
       {/* Main Content */}
       <div className="admin-main">
-        {loading ? (
+        {activeView === 'status' ? (
+          <StatusMonitoring token={token} currentUsername={currentUsername} isAdmin={true} />
+        ) : loading ? (
           <div className="loading-state">
             <div className="spinner-large"></div>
             <p>Loading users...</p>

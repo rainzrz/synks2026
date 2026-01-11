@@ -248,6 +248,25 @@
   color: #FF4444;
 }
 
+.header-btn.nav-btn {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.header-btn.nav-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.header-btn.nav-btn.active {
+  color: #0066CC;
+  background: rgba(0, 102, 204, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.header-btn.nav-btn.active::before {
+  display: none;
+}
+
 /* Main Content */
 .admin-main {
   padding: 0.5rem 1rem;

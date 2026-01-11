@@ -999,6 +999,277 @@ async def health_check():
     """
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
+
+# ==========================================
+# STATUS MONITORING ENDPOINTS
+# ==========================================
+
+async def get_all_links_from_gitlab_wikis() -> List[dict]:
+    """Get all links from all users' GitLab wikis"""
+    all_links = []
+    users = get_all_users()
+
+    for user in users:
+        try:
+            username = user['username']
+            wiki_url = user['wiki_url']
+
+            # Get session for this user
+            conn = sqlite3.connect('portal.db')
+            c = conn.cursor()
+            c.execute('SELECT mint_session FROM sessions WHERE username = ? ORDER BY created_at DESC LIMIT 1', (username,))
+            session_result = c.fetchone()
+            conn.close()
+
+            mint_session = session_result[0] if session_result else None
+
+            # Extract API URL
+            parts = wiki_url.split('/')
+            if len(parts) < 6:
+                continue
+
+            project_path = '/'.join(parts[3:5])
+            wiki_page = parts[-1]
+
+            import urllib.parse
+            project_path_encoded = urllib.parse.quote(project_path, safe='')
+            base_url = f"{parts[0]}//{parts[2]}"
+            api_url = f"{base_url}/api/v4/projects/{project_path_encoded}/wikis/{wiki_page}"
+
+            # Fetch wiki content
+            content = await fetch_wiki_content(api_url, mint_session)
+
+            # Parse JSON
+            import json
+            wiki_data = json.loads(content)
+            markdown_text = wiki_data.get('content', '')
+
+            # Parse links
+            groups = parse_markdown_links(markdown_text)
+
+            for group in groups:
+                for link in group.links:
+                    all_links.append({
+                        'id': f"{username}_{link.url}",
+                        'name': link.text,
+                        'url': link.url,
+                        'username': username,
+                        'product': group.product,
+                        'environment': group.environment
+                    })
+        except Exception as e:
+            print(f"[ERROR] Failed to get links for user {user['username']}: {e}")
+            continue
+
+    return all_links
+
+
+async def get_user_links_from_gitlab_wiki(username: str) -> List[dict]:
+    """Get links from a specific user's GitLab wiki"""
+    try:
+        # Get user's wiki URL
+        conn = sqlite3.connect('portal.db')
+        c = conn.cursor()
+        c.execute('SELECT wiki_url FROM users WHERE username = ?', (username,))
+        result = c.fetchone()
+
+        if not result:
+            conn.close()
+            return []
+
+        wiki_url = result[0]
+
+        # Get session
+        c.execute('SELECT mint_session FROM sessions WHERE username = ? ORDER BY created_at DESC LIMIT 1', (username,))
+        session_result = c.fetchone()
+        conn.close()
+
+        mint_session = session_result[0] if session_result else None
+
+        # Extract API URL
+        parts = wiki_url.split('/')
+        if len(parts) < 6:
+            return []
+
+        project_path = '/'.join(parts[3:5])
+        wiki_page = parts[-1]
+
+        import urllib.parse
+        project_path_encoded = urllib.parse.quote(project_path, safe='')
+        base_url = f"{parts[0]}//{parts[2]}"
+        api_url = f"{base_url}/api/v4/projects/{project_path_encoded}/wikis/{wiki_page}"
+
+        # Fetch wiki content
+        content = await fetch_wiki_content(api_url, mint_session)
+
+        # Parse JSON
+        import json
+        wiki_data = json.loads(content)
+        markdown_text = wiki_data.get('content', '')
+
+        # Parse links
+        groups = parse_markdown_links(markdown_text)
+
+        links = []
+        for group in groups:
+            for link in group.links:
+                links.append({
+                    'id': f"{username}_{link.url}",
+                    'name': link.text,
+                    'url': link.url,
+                    'product': group.product,
+                    'environment': group.environment
+                })
+
+        return links
+    except Exception as e:
+        print(f"[ERROR] Failed to get links for user {username}: {e}")
+        return []
+
+
+@app.get("/api/status/links")
+async def get_all_link_statuses(current_user: dict = Depends(get_current_user)):
+    """Get status for all links (admin only)"""
+    if not current_user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    try:
+        # Import status check function
+        from simple_status_check import check_link_status
+
+        # Get all links
+        links = await get_all_links_from_gitlab_wikis()
+
+        print(f"[STATUS] Checking {len(links)} links in parallel...")
+
+        # Check status for all links in parallel
+        async def check_single_link(link):
+            try:
+                status_info = await check_link_status(link['url'])
+                return {
+                    "id": link['id'],
+                    "name": link['name'],
+                    "url": link['url'],
+                    "status": status_info['status'],
+                    "responseTime": status_info['response_time'],
+                    "uptime": 100 if status_info['status'] == 'online' else 0,
+                    "lastChecked": datetime.now().isoformat()
+                }
+            except Exception as e:
+                print(f"[ERROR] Failed to check status for {link['url']}: {e}")
+                return {
+                    "id": link['id'],
+                    "name": link['name'],
+                    "url": link['url'],
+                    "status": "unknown",
+                    "responseTime": 0,
+                    "uptime": 0,
+                    "lastChecked": datetime.now().isoformat()
+                }
+
+        # Run all checks in parallel
+        link_list = await asyncio.gather(*[check_single_link(link) for link in links])
+
+        print(f"[STATUS] Completed checking {len(link_list)} links")
+
+        return {"links": list(link_list)}
+    except Exception as e:
+        print(f"[ERROR] Failed to get link statuses: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/status/links/{username}")
+async def get_user_link_statuses(
+    username: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get status for a specific user's links"""
+    # Check authorization
+    if current_user['username'] != username and not current_user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    try:
+        # Import status check function
+        from simple_status_check import check_link_status
+
+        # Get user's links
+        user_links = await get_user_links_from_gitlab_wiki(username)
+
+        print(f"[STATUS] Checking {len(user_links)} links in parallel...")
+
+        # Check status for all links in parallel
+        async def check_single_link(link):
+            try:
+                status_info = await check_link_status(link['url'])
+                return {
+                    "id": link['id'],
+                    "name": link['name'],
+                    "url": link['url'],
+                    "status": status_info['status'],
+                    "responseTime": status_info['response_time'],
+                    "uptime": 100 if status_info['status'] == 'online' else 0,
+                    "lastChecked": datetime.now().isoformat()
+                }
+            except Exception as e:
+                print(f"[ERROR] Failed to check status for {link['url']}: {e}")
+                return {
+                    "id": link['id'],
+                    "name": link['name'],
+                    "url": link['url'],
+                    "status": "unknown",
+                    "responseTime": 0,
+                    "uptime": 0,
+                    "lastChecked": datetime.now().isoformat()
+                }
+
+        # Run all checks in parallel
+        link_list = await asyncio.gather(*[check_single_link(link) for link in user_links])
+
+        print(f"[STATUS] Completed checking {len(link_list)} links")
+
+        return {"links": list(link_list)}
+    except Exception as e:
+        print(f"[ERROR] Failed to get user link statuses: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/status/ping/{link_id}")
+async def ping_link(
+    link_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Ping a specific link to check its status"""
+    try:
+        # Import status check function
+        from simple_status_check import check_link_status
+
+        # Extract URL from link_id (format: username_url)
+        parts = link_id.split('_', 1)
+        if len(parts) != 2:
+            raise HTTPException(status_code=400, detail="Invalid link ID format")
+
+        link_url = parts[1]
+
+        # Check status
+        status_info = await check_link_status(link_url)
+
+        return {
+            "id": link_id,
+            "status": status_info['status'],
+            "responseTime": status_info['response_time'],
+            "lastChecked": datetime.now().isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Failed to ping link {link_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
