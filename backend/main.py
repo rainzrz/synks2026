@@ -225,7 +225,6 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
         async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
             # Step 1: Get the login page to extract CSRF token
             login_url = f"{mint_url}/users/sign_in"
-            print(f"[AUTH] Fetching login page: {login_url}")
             
             response = await client.get(login_url)
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -233,15 +232,12 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
             # Find CSRF token (authenticity_token)
             csrf_input = soup.find('input', {'name': 'authenticity_token'})
             if not csrf_input:
-                print("[ERROR] CSRF token not found")
                 return None
             
             csrf_token = csrf_input.get('value')
-            print(f"[OK] Found CSRF token: {csrf_token[:20]}...")
             
             # Get initial cookies
             initial_cookies = dict(response.cookies)
-            print(f"[COOKIE] Initial cookies: {list(initial_cookies.keys())}")
             
             # Step 2: Try LDAP login first
             ldap_login_url = f"{mint_url}/users/auth/ldapmain/callback"
@@ -253,7 +249,6 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
                 'remember_me': '0'
             }
 
-            print(f"[AUTH] Attempting LDAP login for user: {username}")
             auth_response = await client.post(
                 ldap_login_url,
                 data=login_data_ldap,
@@ -264,14 +259,11 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
                 cookies=initial_cookies
             )
 
-            print(f"[AUTH] LDAP login response status: {auth_response.status_code}")
-            print(f"[DEBUG] Final URL after LDAP login: {auth_response.url}")
 
             # Check if LDAP login failed (redirected back to sign_in)
             ldap_failed = '/users/sign_in' in str(auth_response.url)
 
             if ldap_failed:
-                print("[WARN] LDAP login failed, trying Standard login...")
 
                 # Try Standard login
                 standard_login_url = f"{mint_url}/users/sign_in"
@@ -283,7 +275,6 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
                     'user[remember_me]': '0'
                 }
 
-                print(f"[AUTH] Attempting Standard login for user: {username}")
                 auth_response = await client.post(
                     standard_login_url,
                     data=login_data_standard,
@@ -294,42 +285,30 @@ async def authenticate_with_mint(username: str, password: str, mint_url: str) ->
                     cookies=initial_cookies
                 )
 
-                print(f"[AUTH] Standard login response status: {auth_response.status_code}")
-                print(f"[DEBUG] Final URL after Standard login: {auth_response.url}")
 
                 # Check if Standard login also failed
                 if '/users/sign_in' in str(auth_response.url):
-                    print("[ERROR] Both LDAP and Standard login failed")
                     return None
 
             # Collect all cookies from the entire redirect chain
             all_cookies = dict(client.cookies)
-            print(f"[COOKIE] All cookies after login: {list(all_cookies.keys())}")
             
             # Try to access a protected page to verify
             test_url = f"{mint_url}/dashboard/projects"
             test_response = await client.get(test_url)
             
-            print(f"[TEST] Test page status: {test_response.status_code}")
-            print(f"[TEST] Test page URL: {test_response.url}")
             
             # Get cookies after test request
             all_cookies = dict(client.cookies)
-            print(f"[COOKIE] Cookies after test: {list(all_cookies.keys())}")
             
             # If we're not redirected to login, auth was successful
             if '/users/sign_in' not in str(test_response.url):
-                print("[OK] Auth verified - not redirected to login")
                 cookie_str = '; '.join([f"{k}={v}" for k, v in all_cookies.items()])
                 return cookie_str if cookie_str else "authenticated"
             
-            print("[ERROR] Login failed - still redirecting to sign in")
             return None
             
     except Exception as e:
-        print(f"[ERROR] Auth error: {e}")
-        import traceback
-        traceback.print_exc()
         return None
 
 def get_all_users() -> List[dict]:
@@ -388,7 +367,6 @@ def update_user(username: str, new_password: Optional[str] = None,
         conn.close()
         return True
     except Exception as e:
-        print(f"Error updating user: {e}")
         return False
 
 def delete_user(username: str) -> bool:
@@ -407,7 +385,6 @@ def delete_user(username: str) -> bool:
         conn.close()
         return True
     except Exception as e:
-        print(f"Error deleting user: {e}")
         return False
 
 def parse_markdown_links(content: str) -> List[ProductGroup]:
@@ -422,7 +399,6 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
     current_env = None
     current_links = []
 
-    print("\n[DEBUG] Parsing content...")
 
     for i, line in enumerate(lines):
         original_line = line
@@ -434,7 +410,6 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
 
         # Debug first 30 non-empty lines
         if i < 30:
-            print(f"Line {i}: {original_line[:100]}")
 
         # Detect product header (# Title)
         if original_line.startswith('# '):
@@ -446,13 +421,11 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
                     environment=current_env,
                     links=current_links
                 ))
-                print(f"[OK] Added group: {current_product} - {current_env} with {len(current_links)} links")
                 current_links = []
                 current_env = None
 
             # Parse new product header
             current_product = line[2:].strip()  # Remove "# " prefix
-            print(f"[DEBUG] Product: {current_product}")
 
         # Detect environment/version header (## Title)
         elif original_line.startswith('## '):
@@ -464,12 +437,10 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
                     environment=current_env,
                     links=current_links
                 ))
-                print(f"[OK] Added group: {current_product} - {current_env} with {len(current_links)} links")
                 current_links = []
 
             # Set new environment
             current_env = line[3:].strip()  # Remove "## " prefix
-            print(f"[DEBUG] Environment: {current_env}")
 
         # Detect markdown links in bullet points
         elif (line.startswith('*') or line.startswith('-')) and '[' in line and '](' in line:
@@ -479,7 +450,6 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
             for text, url in matches:
                 link = LinkItem(text=text.strip(), url=url.strip())
                 current_links.append(link)
-                print(f"[DEBUG] Found link: {text} -> {url}")
 
     # Add last group
     if current_product and current_env and current_links:
@@ -489,7 +459,6 @@ def parse_markdown_links(content: str) -> List[ProductGroup]:
             environment=current_env,
             links=current_links
         ))
-        print(f"[OK] Added final group: {current_product} - {current_env} with {len(current_links)} links")
 
     return groups
 
@@ -514,7 +483,6 @@ async def fetch_wiki_content(wiki_url: str, session_cookie: str = None) -> str:
             else:
                 cookies_dict['_gitlab_session'] = session_cookie
         
-        print(f"[FETCH] Fetching wiki with cookies: {list(cookies_dict.keys())}")
         
         async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
             response = await client.get(
@@ -523,13 +491,10 @@ async def fetch_wiki_content(wiki_url: str, session_cookie: str = None) -> str:
                 headers=headers
             )
             
-            print(f"[DEBUG] Wiki response status: {response.status_code}")
-            print(f"[DEBUG] Final URL: {response.url}")
             
             if response.status_code == 200:
                 # Check if we got redirected to login page
                 if 'sign_in' in str(response.url) or 'You need to sign in' in response.text:
-                    print("[WARN] Got redirected to login - session invalid!")
                     raise HTTPException(
                         status_code=401, 
                         detail="Session expired. Please login again."
@@ -544,7 +509,6 @@ async def fetch_wiki_content(wiki_url: str, session_cookie: str = None) -> str:
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] Error fetching wiki: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching wiki: {str(e)}")
 
 def get_cached_content(url: str, max_age_minutes: int = 15) -> Optional[str]:
@@ -641,7 +605,6 @@ async def login(request: LoginRequest):
     Authenticate user with GitLab credentials
     """
     # Authenticate with GitLab first
-    print(f"[AUTH] Authenticating {request.username} with GitLab...")
     mint_session = await authenticate_with_mint(
         request.username,
         request.password,
@@ -654,7 +617,6 @@ async def login(request: LoginRequest):
             detail="Invalid GitLab credentials"
         )
 
-    print(f"[OK] GitLab authentication successful for {request.username}")
 
     # Check if user exists in database
     conn = sqlite3.connect('portal.db')
@@ -697,8 +659,6 @@ async def get_dashboard(
                 detail="User does not have a wiki URL configured"
             )
 
-        print(f"\n[DEBUG] Dashboard request for user: {current_user.get('username')}")
-        print(f"[DEBUG] Wiki URL: {wiki_url}")
 
         # Extract project ID and wiki page name from URL
         # URL format: http://mint.systemhaus.com.br:9070/document-group/customer_-a.buhler/-/wikis/Customer_Links
@@ -720,19 +680,15 @@ async def get_dashboard(
         base_url = f"{parts[0]}//{parts[2]}"  # http://mint.systemhaus.com.br:9070
         api_url = f"{base_url}/api/v4/projects/{project_path_encoded}/wikis/{wiki_page}"
 
-        print(f"[DEBUG] API URL: {api_url}")
 
         # Check cache first
         cached = get_cached_content(api_url)
 
         if cached:
-            print("[OK] Using cached content")
             content = cached
         else:
-            print("[FETCH] Fetching fresh content from GitLab API...")
             # Fetch from API
             content = await fetch_wiki_content(api_url, current_user.get('mint_session'))
-            print(f"[DEBUG] Received {len(content)} bytes from API")
             cache_content(api_url, content)
 
         # Parse JSON response from GitLab API
@@ -740,23 +696,12 @@ async def get_dashboard(
         try:
             wiki_data = json.loads(content)
             markdown_text = wiki_data.get('content', '')
-            print(f"[OK] Extracted markdown content ({len(markdown_text)} chars)")
-
-            # Save for debugging
-            with open('debug_markdown.txt', 'w', encoding='utf-8') as f:
-                f.write(markdown_text)
-            print("[SAVE] Saved markdown to debug_markdown.txt")
-
         except json.JSONDecodeError as e:
-            print(f"[ERROR] Failed to parse JSON: {e}")
-            print(f"[DEBUG] Raw content preview: {content[:500]}")
             markdown_text = content
 
         # Parse links
         groups = parse_markdown_links(markdown_text)
-        print(f"[DEBUG] Found {len(groups)} product groups")
         for i, group in enumerate(groups, 1):
-            print(f"   Group {i}: {group.product} - {len(group.links)} links")
 
         return DashboardResponse(
             groups=groups,
@@ -765,9 +710,6 @@ async def get_dashboard(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] Unexpected error in dashboard: {e}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}"
@@ -798,7 +740,6 @@ async def clear_cache(current_user: dict = Depends(get_current_user)):
     conn.commit()
     conn.close()
 
-    print("[CACHE] Cache cleared!")
     return {"message": "Cache cleared successfully"}
 
 @app.get("/api/users", response_model=UsersListResponse)
@@ -913,7 +854,6 @@ async def get_user_dashboard(
     conn.close()
 
     mint_session = session_result[0] if session_result else None
-    print(f"[DEBUG] Using GitLab session for user {username}: {bool(mint_session)}")
 
     if not wiki_url:
         raise HTTPException(
@@ -922,8 +862,6 @@ async def get_user_dashboard(
         )
 
     try:
-        print(f"\n[DEBUG] Dashboard request for user: {username}")
-        print(f"[DEBUG] Wiki URL: {wiki_url}")
 
         # Extract project ID and wiki page name from URL to use GitLab API
         # URL format: http://mint.../document-group/customer_luizfuga/-/wikis/Customer_Links
@@ -943,18 +881,14 @@ async def get_user_dashboard(
         base_url = f"{parts[0]}//{parts[2]}"
         api_url = f"{base_url}/api/v4/projects/{project_path_encoded}/wikis/{wiki_page}"
 
-        print(f"[DEBUG] Using GitLab API URL: {api_url}")
 
         # Check cache first
         cached = get_cached_content(api_url)
 
         if cached:
-            print("[DEBUG] Using cached content")
             content = cached
         else:
-            print("[DEBUG] Fetching content from GitLab API...")
             content = await fetch_wiki_content(api_url, mint_session)
-            print(f"[DEBUG] Received {len(content)} bytes from API")
             cache_content(api_url, content)
 
         # Parse JSON response from GitLab API
@@ -962,12 +896,8 @@ async def get_user_dashboard(
         try:
             wiki_data = json.loads(content)
             markdown_text = wiki_data.get('content', '')
-            print(f"[DEBUG] Extracted markdown content ({len(markdown_text)} chars)")
             if markdown_text:
-                print(f"[DEBUG] First 200 chars: {markdown_text[:200]}")
         except json.JSONDecodeError as e:
-            print(f"[ERROR] Failed to parse JSON from API: {e}")
-            print(f"[DEBUG] Response preview: {content[:500]}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to parse wiki content from GitLab API"
@@ -975,7 +905,6 @@ async def get_user_dashboard(
 
         # Parse links
         groups = parse_markdown_links(markdown_text)
-        print(f"[DEBUG] Found {len(groups)} product groups")
 
         return DashboardResponse(
             groups=groups,
@@ -984,9 +913,6 @@ async def get_user_dashboard(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] Unexpected error in dashboard: {e}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}"
@@ -1057,10 +983,8 @@ async def get_all_links_from_gitlab_wikis() -> List[dict]:
                         'product': group.product,
                         'environment': group.environment
                     }
-                    print(f"[DEBUG] Adding link: {link.text} | Product: {group.product} | Env: {group.environment}")
                     all_links.append(link_data)
         except Exception as e:
-            print(f"[ERROR] Failed to get links for user {user['username']}: {e}")
             continue
 
     return all_links
@@ -1122,12 +1046,10 @@ async def get_user_links_from_gitlab_wiki(username: str) -> List[dict]:
                     'product': group.product,
                     'environment': group.environment
                 }
-                print(f"[DEBUG] Adding link: {link.text} | Product: {group.product} | Env: {group.environment}")
                 links.append(link_data)
 
         return links
     except Exception as e:
-        print(f"[ERROR] Failed to get links for user {username}: {e}")
         return []
 
 
@@ -1144,7 +1066,6 @@ async def get_all_link_statuses(current_user: dict = Depends(get_current_user)):
         # Get all links
         links = await get_all_links_from_gitlab_wikis()
 
-        print(f"[STATUS] Checking {len(links)} links in parallel...")
 
         # Check status for all links in parallel
         async def check_single_link(link):
@@ -1161,10 +1082,8 @@ async def get_all_link_statuses(current_user: dict = Depends(get_current_user)):
                     "uptime": 100 if status_info['status'] == 'online' else 0,
                     "lastChecked": datetime.now().isoformat()
                 }
-                print(f"[DEBUG STATUS] {link['name']}: product={result['product']}, env={result['environment']}")
                 return result
             except Exception as e:
-                print(f"[ERROR] Failed to check status for {link['url']}: {e}")
                 return {
                     "id": link['id'],
                     "name": link['name'],
@@ -1180,17 +1099,8 @@ async def get_all_link_statuses(current_user: dict = Depends(get_current_user)):
         # Run all checks in parallel
         link_list = await asyncio.gather(*[check_single_link(link) for link in links])
 
-        print(f"[STATUS] Completed checking {len(link_list)} links")
-
-        # Debug: Print first 3 links to verify structure
-        for i, link in enumerate(link_list[:3]):
-            print(f"[FINAL DEBUG] Link {i}: product={link.get('product')}, env={link.get('environment')}, name={link.get('name')}")
-
         return {"links": list(link_list)}
     except Exception as e:
-        print(f"[ERROR] Failed to get link statuses: {e}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1211,7 +1121,6 @@ async def get_user_link_statuses(
         # Get user's links
         user_links = await get_user_links_from_gitlab_wiki(username)
 
-        print(f"[STATUS] Checking {len(user_links)} links in parallel...")
 
         # Check status for all links in parallel
         async def check_single_link(link):
@@ -1228,10 +1137,8 @@ async def get_user_link_statuses(
                     "uptime": 100 if status_info['status'] == 'online' else 0,
                     "lastChecked": datetime.now().isoformat()
                 }
-                print(f"[DEBUG STATUS] {link['name']}: product={result['product']}, env={result['environment']}")
                 return result
             except Exception as e:
-                print(f"[ERROR] Failed to check status for {link['url']}: {e}")
                 return {
                     "id": link['id'],
                     "name": link['name'],
@@ -1247,17 +1154,8 @@ async def get_user_link_statuses(
         # Run all checks in parallel
         link_list = await asyncio.gather(*[check_single_link(link) for link in user_links])
 
-        print(f"[STATUS] Completed checking {len(link_list)} links")
-
-        # Debug: Print first 3 links to verify structure
-        for i, link in enumerate(link_list[:3]):
-            print(f"[FINAL DEBUG] Link {i}: product={link.get('product')}, env={link.get('environment')}, name={link.get('name')}")
-
         return {"links": list(link_list)}
     except Exception as e:
-        print(f"[ERROR] Failed to get user link statuses: {e}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1290,7 +1188,6 @@ async def ping_link(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] Failed to ping link {link_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

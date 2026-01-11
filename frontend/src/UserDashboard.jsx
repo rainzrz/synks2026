@@ -36,7 +36,6 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
       const data = await response.json();
       setDashboardData(data);
     } catch (err) {
-      console.error('Dashboard error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -53,7 +52,7 @@ const UserDashboard = ({ token, currentUsername, onLogout }) => {
         },
       });
     } catch (err) {
-      console.error('Cache clear failed:', err);
+      // Cache clear failed - ignore silently
     }
 
     // Then refresh dashboard

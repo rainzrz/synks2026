@@ -18,7 +18,8 @@
       "Bash(powershell.exe -Command \"Stop-Process -Id 31528 -Force\")",
       "Bash(sqlite3:*)",
       "Bash(tee:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(ls:*)"
     ]
   }
 }

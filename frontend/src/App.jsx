@@ -143,7 +143,6 @@ function App() {
       const data = await response.json();
       setUsers(data.users.filter(u => !u.is_admin)); // Only show client users
     } catch (err) {
-      console.error('Error fetching users:', err);
       setError(err.message);
     }
   };
@@ -166,7 +165,6 @@ function App() {
       setDashboardData(data);
       setSelectedUser(targetUsername);
     } catch (err) {
-      console.error('Dashboard error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -197,7 +195,6 @@ function App() {
           },
         });
       } catch (err) {
-        console.log('Cache clear failed:', err);
       }
 
       // Then fetch dashboard

@@ -60,7 +60,6 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
         setLastUpdate(new Date());
       }
     } catch (err) {
-      console.error('Status fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -81,7 +80,6 @@ const StatusMonitoring = ({ token, currentUsername, isAdmin }) => {
         ));
       }
     } catch (err) {
-      console.error('Ping error:', err);
     }
   };
 

@@ -45,12 +45,10 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
         // Fallback: if API returns array directly
         setUsers(data);
       } else {
-        console.error('[AdminDashboard] API returned invalid format:', data);
         setUsers([]);
         setError('Invalid data format received from server');
       }
     } catch (err) {
-      console.error('[AdminDashboard] Error fetching users:', err);
       setError(err.message);
       setUsers([]); // Ensure users is always an array
     } finally {
@@ -76,7 +74,6 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
       setDashboardData(data);
       setSelectedUser(username);
     } catch (err) {
-      console.error('Dashboard error:', err);
       setError(`Error loading ${username}'s dashboard: ${err.message}`);
       setDashboardData(null);
     }
@@ -127,7 +124,7 @@ const AdminDashboard = ({ token, currentUsername, onLogout }) => {
         await fetchDashboard(selectedUser);
       }
     } catch (err) {
-      console.error('Cache clear failed:', err);
+      // Cache clear failed - ignore silently
     }
   };
 

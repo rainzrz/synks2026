@@ -17,7 +17,6 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
   useEffect(() => {
     // Calculate stats - ensure users is an array
     if (!Array.isArray(users)) {
-      console.warn('[AdminTable] users prop is not an array', users);
       return;
     }
 
@@ -102,7 +101,6 @@ const AdminTable = ({ users = [], onDeleteUser, onViewDashboard, API_BASE_URL, t
         window.location.reload();
       }
     } catch (err) {
-      console.error('Create user error:', err);
       setCreateError(err.message);
     }
   };

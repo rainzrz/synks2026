@@ -54,7 +54,6 @@ function AppWithNewUI() {
       const data = await response.json();
       setUsers(data);
     } catch (err) {
-      console.error('Error fetching users:', err);
     }
   };
 
@@ -76,7 +75,6 @@ function AppWithNewUI() {
       setSelectedUser(user);
       setError('');
     } catch (err) {
-      console.error('Dashboard error:', err);
       setError(`Error: ${err.message}`);
       setDashboardData(null);
     }
