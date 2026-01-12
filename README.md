@@ -272,12 +272,6 @@ make test-frontend       # Run frontend tests
 make test-all           # Run all tests
 make coverage           # Generate coverage report
 
-# Code Quality
-make lint-backend       # Lint backend code
-make lint-frontend      # Lint frontend code
-make format-backend     # Format backend code
-make format-frontend    # Format frontend code
-
 # CI/CD
 make commit            # Create conventional commit
 make release           # Create new release
