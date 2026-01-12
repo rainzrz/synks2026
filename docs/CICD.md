@@ -1,4 +1,4 @@
-# 🔄 CI/CD Guide
+#  CI/CD Guide
 
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions)](https://github.com/features/actions)
 [![Automation](https://img.shields.io/badge/Automation-100%25-brightgreen?style=for-the-badge)](https://github.com/username/synks/actions)
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#-overview)
 - [Pipeline Architecture](#-pipeline-architecture)
@@ -19,7 +19,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 Our CI/CD pipeline provides **fully automated** testing, security scanning, building, and deployment using GitHub Actions.
 
@@ -27,18 +27,18 @@ Our CI/CD pipeline provides **fully automated** testing, security scanning, buil
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| **🧪 Automated Testing** | Unit, integration, E2E tests | ✅ Active |
-| **🔒 Security Scanning** | CodeQL, Trivy, Dependency Review | ✅ Active |
-| **📦 Docker Builds** | Multi-platform image building | ✅ Active |
-| **🚀 Auto Deployment** | Staging & production deploys | ✅ Active |
-| **📊 Code Quality** | Linting, formatting, type checking | ✅ Active |
-| **🏷️ Auto Labeling** | PR categorization & sizing | ✅ Active |
-| **📝 Changelog Generation** | Automatic release notes | ✅ Active |
-| **🤖 Dependency Updates** | Dependabot automation | ✅ Active |
+| ** Automated Testing** | Unit, integration, E2E tests |  Active |
+| ** Security Scanning** | CodeQL, Trivy, Dependency Review |  Active |
+| ** Docker Builds** | Multi-platform image building |  Active |
+| ** Auto Deployment** | Staging & production deploys |  Active |
+| ** Code Quality** | Linting, formatting, type checking |  Active |
+| ** Auto Labeling** | PR categorization & sizing |  Active |
+| ** Changelog Generation** | Automatic release notes |  Active |
+| ** Dependency Updates** | Dependabot automation |  Active |
 
 ---
 
-## 🏗️ Pipeline Architecture
+##  Pipeline Architecture
 
 ### Complete CI/CD Flow
 
@@ -59,7 +59,7 @@ graph TB
     C3 --> C4
     C4 --> C5{All Passed?}
     C5 -->|Yes| C6[Build Docker Images]
-    C5 -->|No| Fail([❌ Build Failed])
+    C5 -->|No| Fail([ Build Failed])
 
     C6 --> C7{Branch?}
     C7 -->|develop| C8[Deploy to Staging]
@@ -70,14 +70,14 @@ graph TB
     D --> D3[Auto-label]
     D --> D4[CodeQL Scan]
     D1 & D2 & D3 & D4 --> D5{All Passed?}
-    D5 -->|Yes| Success1([✅ Ready for Review])
+    D5 -->|Yes| Success1([ Ready for Review])
     D5 -->|No| Fail
 
     E --> E1[Build Multi-platform]
     E1 --> E2[Generate Changelog]
     E2 --> E3[Create GitHub Release]
     E3 --> E4[Deploy to Production]
-    E4 --> Success2([✅ Release Complete])
+    E4 --> Success2([ Release Complete])
 
     style C6 fill:#4CAF50
     style C8 fill:#FF9800
@@ -117,10 +117,10 @@ backend-tests:
 ```
 
 **Quality Gates**:
-- ✅ Black formatting (zero tolerance)
-- ✅ Flake8 linting (max-complexity: 10)
-- ✅ MyPy type checking (strict mode)
-- ✅ Test coverage > 80%
+-  Black formatting (zero tolerance)
+-  Flake8 linting (max-complexity: 10)
+-  MyPy type checking (strict mode)
+-  Test coverage > 80%
 
 #### Job 2: Frontend Tests
 ```yaml
@@ -138,10 +138,10 @@ frontend-tests:
 ```
 
 **Quality Gates**:
-- ✅ ESLint (zero warnings)
-- ✅ TypeScript compilation (no errors)
-- ✅ Test coverage > 75%
-- ✅ Build succeeds
+-  ESLint (zero warnings)
+-  TypeScript compilation (no errors)
+-  Test coverage > 75%
+-  Build succeeds
 
 #### Job 3: Security Scan
 ```yaml
@@ -156,9 +156,9 @@ security-scan:
 ```
 
 **Security Checks**:
-- 🔒 Known vulnerabilities (HIGH/CRITICAL → fail)
-- 🔒 Outdated dependencies
-- 🔒 License compliance
+-  Known vulnerabilities (HIGH/CRITICAL → fail)
+-  Outdated dependencies
+-  License compliance
 
 #### Job 4: Build Docker Images
 ```yaml
@@ -174,10 +174,10 @@ build:
 ```
 
 **Image Optimization**:
-- 📦 Multi-stage builds
-- 📦 Layer caching
-- 📦 Minimal base images
-- 📦 Multi-platform support
+-  Multi-stage builds
+-  Layer caching
+-  Minimal base images
+-  Multi-platform support
 
 #### Job 5: Deploy Staging
 ```yaml
@@ -271,8 +271,8 @@ strategy:
 - name: Validate PR Title
   # Must follow conventional format
   # Examples:
-  #   ✅ feat(auth): add OAuth2 support
-  #   ❌ Updated login page
+  #    feat(auth): add OAuth2 support
+  #    Updated login page
 ```
 
 ---
@@ -289,9 +289,9 @@ strategy:
 **Languages**: Python, JavaScript/TypeScript
 
 **Features**:
-- 🔍 Code quality analysis
-- 🔍 Security vulnerability detection
-- 🔍 Best practice recommendations
+-  Code quality analysis
+-  Security vulnerability detection
+-  Best practice recommendations
 
 ---
 
@@ -325,17 +325,17 @@ strategy:
 6. Deploy to production
 
 **Changelog Categorization**:
-- ✨ **Features**: `feat:` commits
-- 🐛 **Bug Fixes**: `fix:` commits
-- 📚 **Documentation**: `docs:` commits
-- ⚡ **Performance**: `perf:` commits
-- 🔒 **Security**: Security-related fixes
-- 🧪 **Tests**: `test:` commits
-- 🔄 **Refactoring**: `refactor:` commits
+-  **Features**: `feat:` commits
+-  **Bug Fixes**: `fix:` commits
+-  **Documentation**: `docs:` commits
+-  **Performance**: `perf:` commits
+-  **Security**: Security-related fixes
+-  **Tests**: `test:` commits
+-  **Refactoring**: `refactor:` commits
 
 ---
 
-## 📝 Conventional Commits
+##  Conventional Commits
 
 ### Format
 
@@ -410,7 +410,7 @@ make commit
 
 ---
 
-## 🏷️ Semantic Versioning
+##  Semantic Versioning
 
 ### Version Format
 
@@ -469,7 +469,7 @@ git push origin v1.3.0
 
 ---
 
-## 🚀 Deployment Strategy
+##  Deployment Strategy
 
 ### Environments
 
@@ -546,7 +546,7 @@ git push origin v1.2.4 --force
 
 ---
 
-## 📊 Monitoring & Alerts
+##  Monitoring & Alerts
 
 ### GitHub Actions Monitoring
 
@@ -571,7 +571,7 @@ branch_protection:
     webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
     payload: |
       {
-        "text": "❌ Build failed: ${{ github.workflow }}",
+        "text": " Build failed: ${{ github.workflow }}",
         "blocks": [
           {
             "type": "section",
@@ -601,17 +601,17 @@ branch_protection:
 
 ---
 
-## 🎯 Best Practices
+##  Best Practices
 
 ### Commit Best Practices
 
-✅ **DO:**
+ **DO:**
 - Use conventional commit format
 - Write clear, concise descriptions
 - Reference related issues
 - Keep commits atomic (one logical change)
 
-❌ **DON'T:**
+ **DON'T:**
 - Commit secrets or credentials
 - Mix unrelated changes
 - Use vague messages ("fix stuff", "updates")
@@ -619,14 +619,14 @@ branch_protection:
 
 ### Pull Request Best Practices
 
-✅ **DO:**
+ **DO:**
 - Fill out PR template completely
 - Keep PRs small and focused
 - Add tests for new features
 - Update documentation
 - Request specific reviewers
 
-❌ **DON'T:**
+ **DON'T:**
 - Submit PRs with failing tests
 - Include unrelated changes
 - Push directly to main/develop
@@ -634,14 +634,14 @@ branch_protection:
 
 ### CI/CD Best Practices
 
-✅ **DO:**
+ **DO:**
 - Keep pipelines fast (< 10 minutes)
 - Cache dependencies
 - Run tests in parallel
 - Fail fast (run quick tests first)
 - Use matrix strategies
 
-❌ **DON'T:**
+ **DON'T:**
 - Skip security scans
 - Ignore failing tests
 - Deploy without testing
@@ -649,7 +649,7 @@ branch_protection:
 
 ---
 
-## 🔧 Local Development
+##  Local Development
 
 ### Run CI Checks Locally
 
@@ -691,7 +691,7 @@ act -l
 
 ---
 
-## 📚 Additional Resources
+##  Additional Resources
 
 - [GitHub Actions Documentation](https://docs.github.com/actions)
 - [Conventional Commits Specification](https://www.conventionalcommits.org/)
@@ -700,7 +700,7 @@ act -l
 
 ---
 
-## 🎓 Quick Reference
+##  Quick Reference
 
 ### Common Commands
 
@@ -747,6 +747,6 @@ BREAKING CHANGE: OAuth2 required for all endpoints
 
 **For CI/CD support, check the Actions tab or contact the DevOps team.**
 
-[📚 Back to Documentation](../README.md#-documentation)
+[ Back to Documentation](../README.md#-documentation)
 
 </div>

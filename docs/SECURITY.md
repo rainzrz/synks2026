@@ -1,4 +1,4 @@
-# 🔒 Security Guide
+#  Security Guide
 
 [![Security](https://img.shields.io/badge/Security-Enterprise_Grade-brightgreen?style=for-the-badge&logo=security)](https://github.com/username/synks/security)
 [![Vulnerability Scan](https://img.shields.io/badge/Scan-Automated-blue?style=for-the-badge&logo=sonarqube)](https://github.com/username/synks/security/code-scanning)
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#-overview)
 - [Security Architecture](#-security-architecture)
@@ -20,7 +20,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 Comprehensive security implementation following industry best practices and OWASP Top 10 guidelines.
 
@@ -54,7 +54,7 @@ Comprehensive security implementation following industry best practices and OWAS
 
 ---
 
-## 🏗️ Security Architecture
+##  Security Architecture
 
 ### Threat Model
 
@@ -93,7 +93,7 @@ graph TB
 
 ---
 
-## 🔐 Authentication & Authorization
+##  Authentication & Authorization
 
 ### Authentication Flow
 
@@ -380,7 +380,7 @@ async def delete_category(
 
 ---
 
-## 🔐 Data Protection
+##  Data Protection
 
 ### Encryption at Rest
 
@@ -536,7 +536,7 @@ CREATE TRIGGER users_audit
 
 ---
 
-## 🛡️ API Security
+##  API Security
 
 ### Input Validation
 
@@ -588,11 +588,11 @@ class UserCreateSchema(BaseModel):
 ### SQL Injection Prevention
 
 ```python
-# ❌ NEVER DO THIS (Vulnerable to SQL injection)
+#  NEVER DO THIS (Vulnerable to SQL injection)
 query = f"SELECT * FROM users WHERE email = '{email}'"
 result = await db.execute(query)
 
-# ✅ Always use parameterized queries
+#  Always use parameterized queries
 from sqlalchemy import select, text
 
 # ORM (preferred)
@@ -792,7 +792,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 ---
 
-## 🏢 Infrastructure Security
+##  Infrastructure Security
 
 ### Docker Security
 
@@ -873,7 +873,7 @@ kubectl create secret generic synks-secrets \
 
 ---
 
-## 🧪 Security Testing
+##  Security Testing
 
 ### Automated Security Scanning
 
@@ -910,7 +910,7 @@ testssl.sh https://synks.app
 
 ---
 
-## 🚨 Incident Response
+##  Incident Response
 
 ### Security Incident Playbook
 
@@ -951,6 +951,6 @@ See [Incident Response Runbook](./INCIDENT_RESPONSE.md) for detailed procedures.
 
 **For security concerns, please email security@synks.app or report via GitHub Security Advisories.**
 
-[📚 Back to Documentation](../README.md#-documentation)
+[ Back to Documentation](../README.md#-documentation)
 
 </div>

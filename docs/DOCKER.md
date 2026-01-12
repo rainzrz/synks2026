@@ -1,4 +1,4 @@
-# 🐳 Docker Guide
+#  Docker Guide
 
 [![Docker](https://img.shields.io/badge/Docker-Production_Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![Docker Compose](https://img.shields.io/badge/Compose-Multi--Service-2496ED?style=for-the-badge&logo=docker)](https://docs.docker.com/compose/)
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#-overview)
 - [Quick Start](#-quick-start)
@@ -19,7 +19,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 Synks uses Docker for containerization, providing:
 
@@ -58,7 +58,7 @@ Synks uses Docker for containerization, providing:
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -130,7 +130,7 @@ make db-init
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ### Multi-Stage Builds
 
@@ -196,10 +196,10 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 **Benefits:**
-- 🎯 **Smaller images**: ~200MB vs ~1GB
-- ⚡ **Faster builds**: Cached layers
-- 🔒 **More secure**: No build tools in production
-- 📦 **Better performance**: Optimized runtime
+-  **Smaller images**: ~200MB vs ~1GB
+-  **Faster builds**: Cached layers
+-  **More secure**: No build tools in production
+-  **Better performance**: Optimized runtime
 
 #### Frontend Dockerfile
 
@@ -473,7 +473,7 @@ volumes:
 
 ---
 
-## 🔧 Services
+##  Services
 
 ### Service Overview
 
@@ -516,7 +516,7 @@ docker stats
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 ### Environment Variables
 
@@ -613,7 +613,7 @@ services:
 
 ---
 
-## ⚡ Performance Tuning
+##  Performance Tuning
 
 ### Resource Limits
 
@@ -674,7 +674,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 ---
 
-## 🔒 Security
+##  Security
 
 ### Security Best Practices
 
@@ -749,7 +749,7 @@ services:
 
 ---
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -844,7 +844,7 @@ docker inspect --format='{{json .State.Health}}' synks-backend | jq
 
 ---
 
-## 📊 Monitoring
+##  Monitoring
 
 ### Container Metrics
 
@@ -886,7 +886,7 @@ services:
 
 ---
 
-## 🚀 Advanced Topics
+##  Advanced Topics
 
 ### Docker Compose Profiles
 
@@ -935,6 +935,6 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 
 **For Docker support, check the troubleshooting section or contact the DevOps team.**
 
-[📚 Back to Documentation](../README.md#-documentation)
+[ Back to Documentation](../README.md#-documentation)
 
 </div>

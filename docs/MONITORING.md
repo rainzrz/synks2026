@@ -1,4 +1,4 @@
-# 📊 Monitoring & Observability Guide
+#  Monitoring & Observability Guide
 
 [![Monitoring](https://img.shields.io/badge/Monitoring-Prometheus-E6522C?style=for-the-badge&logo=prometheus)](https://prometheus.io/)
 [![Visualization](https://img.shields.io/badge/Dashboards-Grafana-F46800?style=for-the-badge&logo=grafana)](https://grafana.com/)
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#-overview)
 - [Monitoring Stack](#-monitoring-stack)
@@ -19,7 +19,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 Comprehensive observability solution providing real-time insights into application health, performance, and user experience.
 
@@ -29,7 +29,7 @@ Comprehensive observability solution providing real-time insights into applicati
 ┌─────────────────────────────────────────────────┐
 │                 Observability                    │
 ├─────────────────┬─────────────────┬─────────────┤
-│    📊 Metrics   │   📝 Logs      │  🔍 Traces  │
+│     Metrics   │    Logs      │   Traces  │
 │                 │                 │             │
 │  • Counters     │  • Structured  │  • Spans    │
 │  • Gauges       │  • Centralized │  • Context  │
@@ -40,7 +40,7 @@ Comprehensive observability solution providing real-time insights into applicati
 
 ---
 
-## 🏗️ Monitoring Stack
+##  Monitoring Stack
 
 ### Architecture
 
@@ -97,7 +97,7 @@ graph TB
 
 ---
 
-## 📈 Metrics Collection
+##  Metrics Collection
 
 ### Backend Metrics
 
@@ -326,7 +326,7 @@ scrape_configs:
 
 ---
 
-## 📊 Dashboards
+##  Dashboards
 
 ### Grafana Setup
 
@@ -469,7 +469,7 @@ rate(cache_hits_total[5m]) /
 
 ---
 
-## 🚨 Alerting
+##  Alerting
 
 ### Alert Rules
 
@@ -603,7 +603,7 @@ receivers:
   - name: 'slack'
     slack_configs:
       - channel: '#monitoring'
-        title: '⚠️ {{ .CommonAnnotations.summary }}'
+        title: '⚠ {{ .CommonAnnotations.summary }}'
         text: |
           *Alert:* {{ .CommonLabels.alertname }}
           *Severity:* {{ .CommonLabels.severity }}
@@ -616,7 +616,7 @@ receivers:
 
 ---
 
-## 📝 Logging
+##  Logging
 
 ### Structured Logging
 
@@ -716,7 +716,7 @@ promtail:
 
 ---
 
-## ⚡ Performance Monitoring
+##  Performance Monitoring
 
 ### Key Performance Indicators
 
@@ -759,14 +759,14 @@ topk(10,
 
 ---
 
-## 🚑 Incident Response
+##  Incident Response
 
 ### On-Call Procedure
 
 #### 1. Alert Received
 
 ```
-📱 PagerDuty Alert → Check Grafana Dashboard → Review Logs → Identify Root Cause
+ PagerDuty Alert → Check Grafana Dashboard → Review Logs → Identify Root Cause
 ```
 
 #### 2. Triage Checklist
@@ -807,7 +807,7 @@ docker-compose up -d --scale backend=5
 
 ---
 
-## 📚 Useful Queries
+##  Useful Queries
 
 ### PromQL Cheat Sheet
 
@@ -847,6 +847,6 @@ topk(5, histogram_quantile(0.95,
 
 **For monitoring support, check Grafana dashboards or contact the SRE team.**
 
-[📚 Back to Documentation](../README.md#-documentation)
+[ Back to Documentation](../README.md#-documentation)
 
 </div>

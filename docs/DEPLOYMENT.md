@@ -1,4 +1,4 @@
-# 🚀 Deployment Guide
+#  Deployment Guide
 
 [![Deployment](https://img.shields.io/badge/Deployment-Production_Ready-brightgreen?style=for-the-badge)](https://synks.app)
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)](https://hub.docker.com/r/synks/app)
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#-overview)
 - [Prerequisites](#-prerequisites)
@@ -19,7 +19,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 This guide covers deploying the Synks application across different environments, from local development to production cloud infrastructure.
 
@@ -33,7 +33,7 @@ This guide covers deploying the Synks application across different environments,
 
 ---
 
-## 📦 Prerequisites
+##  Prerequisites
 
 ### Required Software
 
@@ -65,7 +65,7 @@ kubectl version          # >= 1.28.0
 
 ---
 
-## 🔧 Environment Setup
+##  Environment Setup
 
 ### 1. Environment Variables
 
@@ -206,7 +206,7 @@ SLACK_WEBHOOK_URL           # Deployment notifications
 
 ---
 
-## 🎯 Deployment Methods
+##  Deployment Methods
 
 ### Method 1: Docker Compose (Local/Small Scale)
 
@@ -615,7 +615,7 @@ kubectl logs -f deployment/synks-backend -n production
 
 ---
 
-## ✅ Production Checklist
+##  Production Checklist
 
 ### Pre-Deployment
 
@@ -651,7 +651,7 @@ kubectl logs -f deployment/synks-backend -n production
 
 ---
 
-## 📊 Monitoring & Maintenance
+##  Monitoring & Maintenance
 
 ### Health Check Endpoints
 
@@ -713,7 +713,7 @@ groups:
 
 ---
 
-## 🔄 Rollback Procedures
+##  Rollback Procedures
 
 ### Quick Rollback (ECS)
 
@@ -758,7 +758,7 @@ aws rds restore-db-instance-from-db-snapshot \
 
 ---
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -828,7 +828,7 @@ INFO stats
 
 ---
 
-## 📚 Additional Resources
+##  Additional Resources
 
 - [AWS ECS Best Practices](https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/)
 - [Kubernetes Production Best Practices](https://kubernetes.io/docs/setup/best-practices/)
@@ -841,6 +841,6 @@ INFO stats
 
 **For deployment support, contact the DevOps team or open an issue.**
 
-[📚 Back to Documentation](../README.md#-documentation)
+[ Back to Documentation](../README.md#-documentation)
 
 </div>

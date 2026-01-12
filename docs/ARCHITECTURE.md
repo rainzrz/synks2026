@@ -1,4 +1,4 @@
-# 🏗️ Architecture Guide
+#  Architecture Guide
 
 [![System Design](https://img.shields.io/badge/Design-Microservices-brightgreen?style=for-the-badge)](https://microservices.io/)
 [![Pattern](https://img.shields.io/badge/Pattern-Clean_Architecture-blue?style=for-the-badge)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#-overview)
 - [System Architecture](#-system-architecture)
@@ -20,7 +20,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 Synks is built using a **modern microservices-inspired architecture** with clear separation of concerns, leveraging industry best practices for scalability, maintainability, and performance.
 
@@ -28,16 +28,16 @@ Synks is built using a **modern microservices-inspired architecture** with clear
 
 | Principle | Implementation |
 |-----------|----------------|
-| **🎯 Single Responsibility** | Each module has one clear purpose |
+| ** Single Responsibility** | Each module has one clear purpose |
 | **🔓 Open/Closed** | Open for extension, closed for modification |
-| **🔄 Dependency Inversion** | Depend on abstractions, not concretions |
-| **📦 Encapsulation** | Hide implementation details |
-| **🧪 Testability** | Designed for unit and integration testing |
-| **⚡ Performance** | Optimized for low latency and high throughput |
+| ** Dependency Inversion** | Depend on abstractions, not concretions |
+| ** Encapsulation** | Hide implementation details |
+| ** Testability** | Designed for unit and integration testing |
+| ** Performance** | Optimized for low latency and high throughput |
 
 ---
 
-## 🌐 System Architecture
+##  System Architecture
 
 ### High-Level Overview
 
@@ -121,7 +121,7 @@ graph TB
 
 ---
 
-## 🐍 Backend Architecture
+##  Backend Architecture
 
 ### Clean Architecture Layers
 
@@ -312,7 +312,7 @@ sequenceDiagram
 
 ---
 
-## ⚛️ Frontend Architecture
+##  Frontend Architecture
 
 ### Component Architecture
 
@@ -500,7 +500,7 @@ export const Button: React.FC<ButtonProps> = ({
 
 ---
 
-## 💾 Data Architecture
+##  Data Architecture
 
 ### Database Schema
 
@@ -649,7 +649,7 @@ dashboard:user:{user_id}:charts:{date_range}
 
 ---
 
-## 🔒 Security Architecture
+##  Security Architecture
 
 ### Authentication Flow
 
@@ -736,7 +736,7 @@ security_headers = {
 
 ---
 
-## 🚀 Deployment Architecture
+##  Deployment Architecture
 
 ### Multi-Environment Strategy
 
@@ -797,7 +797,7 @@ Instance: cache.t3.medium
 
 ---
 
-## 🎨 Design Patterns
+##  Design Patterns
 
 ### Backend Patterns
 
@@ -872,7 +872,7 @@ function useAuth() {
 
 ---
 
-## 📝 Architecture Decision Records
+##  Architecture Decision Records
 
 ### ADR-001: Use FastAPI for Backend
 
@@ -883,11 +883,11 @@ function useAuth() {
 **Decision**: Use FastAPI
 
 **Consequences**:
-- ✅ High performance (async/await)
-- ✅ Automatic API documentation
-- ✅ Type safety with Pydantic
-- ✅ Modern Python features
-- ⚠️ Smaller ecosystem than Flask/Django
+-  High performance (async/await)
+-  Automatic API documentation
+-  Type safety with Pydantic
+-  Modern Python features
+- ⚠ Smaller ecosystem than Flask/Django
 
 ---
 
@@ -900,10 +900,10 @@ function useAuth() {
 **Decision**: Use Redux Toolkit
 
 **Consequences**:
-- ✅ Predictable state updates
-- ✅ Excellent DevTools
-- ✅ Built-in best practices
-- ⚠️ Learning curve for new developers
+-  Predictable state updates
+-  Excellent DevTools
+-  Built-in best practices
+- ⚠ Learning curve for new developers
 
 ---
 
@@ -916,10 +916,10 @@ function useAuth() {
 **Decision**: Use PostgreSQL 15+
 
 **Consequences**:
-- ✅ ACID compliance
-- ✅ Rich feature set (JSON, full-text search)
-- ✅ Mature ecosystem
-- ✅ Excellent performance
+-  ACID compliance
+-  Rich feature set (JSON, full-text search)
+-  Mature ecosystem
+-  Excellent performance
 
 ---
 
@@ -932,14 +932,14 @@ function useAuth() {
 **Decision**: Use Docker with multi-stage builds
 
 **Consequences**:
-- ✅ Consistent environments
-- ✅ Easy local development
-- ✅ Simplified deployment
-- ⚠️ Additional complexity for beginners
+-  Consistent environments
+-  Easy local development
+-  Simplified deployment
+- ⚠ Additional complexity for beginners
 
 ---
 
-## 📊 Performance Characteristics
+##  Performance Characteristics
 
 | Metric | Target | Current |
 |--------|--------|---------|
@@ -954,7 +954,7 @@ function useAuth() {
 
 ---
 
-## 🔮 Future Architecture Considerations
+##  Future Architecture Considerations
 
 ### Short-term (3-6 months)
 - [ ] Implement GraphQL API
@@ -980,6 +980,6 @@ function useAuth() {
 
 **For questions or suggestions about the architecture, please open an issue or contact the architecture team.**
 
-[📚 Back to Documentation](../README.md#-documentation)
+[ Back to Documentation](../README.md#-documentation)
 
 </div>

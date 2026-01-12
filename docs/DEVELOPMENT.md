@@ -1,4 +1,4 @@
-# 🔧 Development Guide
+#  Development Guide
 
 [![Development](https://img.shields.io/badge/Development-Active-brightgreen?style=for-the-badge)](https://github.com/username/synks)
 [![Contributors](https://img.shields.io/github/contributors/username/synks?style=for-the-badge)](https://github.com/username/synks/graphs/contributors)
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Getting Started](#-getting-started)
 - [Development Environment](#-development-environment)
@@ -20,7 +20,7 @@
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -82,7 +82,7 @@ npm run prepare  # Setup Git hooks
 
 ---
 
-## 💻 Development Environment
+##  Development Environment
 
 ### Recommended IDE: VS Code
 
@@ -312,7 +312,7 @@ frontend/
 
 ---
 
-## 📏 Coding Standards
+##  Coding Standards
 
 ### Python Style Guide
 
@@ -611,7 +611,7 @@ make commit
 
 ---
 
-## 🌿 Git Workflow
+##  Git Workflow
 
 ### Branch Strategy
 
@@ -683,11 +683,11 @@ docs(api): update authentication documentation
 Brief description of what this PR does.
 
 ## Type of Change
-- [ ] 🐛 Bug fix
-- [ ] ✨ New feature
+- [ ]  Bug fix
+- [ ]  New feature
 - [ ] 💥 Breaking change
-- [ ] 📚 Documentation
-- [ ] 🔧 Refactoring
+- [ ]  Documentation
+- [ ]  Refactoring
 
 ## Related Issues
 Closes #123
@@ -717,7 +717,7 @@ Closes #123
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 ### Backend Testing
 
@@ -946,7 +946,7 @@ make coverage-frontend     # Generate coverage report
 
 ---
 
-## 🐛 Debugging
+##  Debugging
 
 ### Backend Debugging
 
@@ -1034,7 +1034,7 @@ if (someCondition) {
 
 ---
 
-## ⚡ Performance Optimization
+##  Performance Optimization
 
 ### Backend Optimization
 
@@ -1140,7 +1140,7 @@ function App() {
 
 ---
 
-## 📝 Common Tasks
+##  Common Tasks
 
 ### Add a New API Endpoint
 
@@ -1245,6 +1245,6 @@ alembic downgrade -1
 
 **Happy coding! For questions, open an issue or reach out to the team.**
 
-[📚 Back to Documentation](../README.md#-documentation)
+[ Back to Documentation](../README.md#-documentation)
 
 </div>
