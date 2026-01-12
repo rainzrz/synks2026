@@ -458,12 +458,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with  by the Synks Team**
-
- **Star us on GitHub** if you find this project useful!
-
-[![GitHub stars](https://img.shields.io/github/stars/username/synks?style=social)](https://github.com/username/synks/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/username/synks?style=social)](https://github.com/username/synks/network/members)
-[![GitHub watchers](https://img.shields.io/github/watchers/username/synks?style=social)](https://github.com/username/synks/watchers)
+**Made by Raian Rodrigues**
 
 </div>
