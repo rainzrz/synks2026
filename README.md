@@ -289,21 +289,6 @@ make db-seed           # Seed database
 make db-backup         # Backup database
 ```
 
-### Conventional Commits
-
-This project follows [Conventional Commits](https://www.conventionalcommits.org/):
-
-```bash
-feat(auth): add OAuth2 login support
-fix(dashboard): resolve data loading issue
-docs(readme): update installation instructions
-refactor(api): simplify error handling
-perf(cache): improve Redis connection pooling
-test(auth): add unit tests for login endpoint
-```
-
-Use `make commit` for interactive commit creation with validation.
-
 ---
 
 ##  Docker
@@ -443,27 +428,6 @@ make release
 ```
 
 See [CI/CD Guide](docs/CICD.md) for details.
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Workflow
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feat/amazing-feature`)
-3. **Commit** using conventional commits (`make commit`)
-4. **Push** to your branch (`git push origin feat/amazing-feature`)
-5. **Open** a Pull Request
-
-### Code Review Process
-
-- All PRs require at least 1 approval
-- CI/CD checks must pass
-- Code coverage must not decrease
-- Documentation must be updated
 
 ---
 
