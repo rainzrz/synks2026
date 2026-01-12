@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: synks-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist database
+      - ./backend/data:/app/data
+      # Mount database in data directory
+      - ./backend/portal.db:/app/data/portal.db
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_PATH=/app/data/portal.db
+    restart: unless-stopped
+    networks:
+      - synks-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: synks-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - synks-network
+    environment:
+      - VITE_API_URL=http://localhost:8000
+
+networks:
+  synks-network:
+    driver: bridge
+
+volumes:
+  backend-data:
+    driver: local
