@@ -1,0 +1,65 @@
+# Auto-labeler configuration for PRs
+
+backend:
+  - backend/**/*
+  - backend/*
+
+frontend:
+  - frontend/**/*
+  - frontend/*
+
+docker:
+  - Dockerfile
+  - docker-compose*.yml
+  - '**/Dockerfile'
+  - .dockerignore
+
+ci/cd:
+  - .github/workflows/**/*
+  - .github/**/*
+
+documentation:
+  - '*.md'
+  - docs/**/*
+  - '**/*.md'
+
+dependencies:
+  - '**/package.json'
+  - '**/package-lock.json'
+  - '**/requirements.txt'
+  - '**/Pipfile'
+  - '**/Pipfile.lock'
+
+configuration:
+  - '**/*.yml'
+  - '**/*.yaml'
+  - '**/*.toml'
+  - '**/*.json'
+  - .env*
+  - '**/config/**/*'
+
+database:
+  - backend/database.py
+  - backend/models.py
+  - '**/migrations/**/*'
+
+api:
+  - backend/routes/**/*
+  - backend/main.py
+
+ui:
+  - frontend/src/components/**/*
+  - frontend/src/pages/**/*
+  - '**/*.jsx'
+  - '**/*.tsx'
+
+tests:
+  - '**/test_*.py'
+  - '**/tests/**/*'
+  - '**/*.test.js'
+  - '**/*.test.jsx'
+  - '**/*.spec.js'
+
+security:
+  - backend/auth.py
+  - '**/security/**/*'

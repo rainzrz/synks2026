@@ -1,0 +1,51 @@
+version: '3.8'
+
+# ==============================================
+# SYNKS APPLICATION - DEVELOPMENT ENVIRONMENT
+# ==============================================
+# Simplified version for local development
+# Usage: docker-compose -f docker-compose.dev.yml up
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: synks-backend-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - backend-data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_PATH=/app/data/portal.db
+      - LOG_LEVEL=DEBUG
+      - ENVIRONMENT=development
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    networks:
+      - synks-dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: synks-frontend-dev
+    ports:
+      - "5173:80"
+    volumes:
+      - ./frontend:/app
+    restart: unless-stopped
+    networks:
+      - synks-dev
+    depends_on:
+      - backend
+
+networks:
+  synks-dev:
+    driver: bridge
+
+volumes:
+  backend-data:
+    driver: local

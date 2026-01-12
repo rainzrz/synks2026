@@ -1,0 +1,166 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  # ============================================
+  # PR SIZE CHECK
+  # ============================================
+  check-pr-size:
+    name: Check PR Size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const additions = pr.additions;
+            const deletions = pr.deletions;
+            const total = additions + deletions;
+
+            let label = '';
+            let comment = '';
+
+            if (total < 50) {
+              label = 'size/XS';
+            } else if (total < 200) {
+              label = 'size/S';
+            } else if (total < 500) {
+              label = 'size/M';
+            } else if (total < 1000) {
+              label = 'size/L';
+              comment = '⚠️ This is a large PR. Consider breaking it into smaller PRs for easier review.';
+            } else {
+              label = 'size/XL';
+              comment = '🚨 This is a very large PR! Please consider breaking it into multiple smaller PRs.';
+            }
+
+            // Add label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: [label]
+            });
+
+            // Add comment if PR is large
+            if (comment) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: comment
+              });
+            }
+
+  # ============================================
+  # CONVENTIONAL COMMITS CHECK
+  # ============================================
+  check-commits:
+    name: Check Commit Messages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check commits
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commits = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+
+            const conventionalCommitRegex = /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .+/;
+
+            const invalidCommits = commits.data.filter(commit =>
+              !conventionalCommitRegex.test(commit.commit.message.split('\n')[0])
+            );
+
+            if (invalidCommits.length > 0) {
+              const messages = invalidCommits.map(c => `- ${c.sha.substring(0, 7)}: ${c.commit.message.split('\n')[0]}`).join('\n');
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: `⚠️ **Conventional Commits Check Failed**
+
+The following commits don't follow conventional commit format:
+
+${messages}
+
+Please use format: \`type(scope): message\`
+
+**Types:** feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert
+
+**Example:** \`feat(auth): add login endpoint\``
+              });
+            }
+
+  # ============================================
+  # AUTO-LABEL PR
+  # ============================================
+  auto-label:
+    name: Auto Label PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Label PR based on files changed
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+
+  # ============================================
+  # CHECK PR TITLE
+  # ============================================
+  check-pr-title:
+    name: Check PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title format
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+            ci
+            build
+            revert
+          requireScope: false
+
+  # ============================================
+  # GREETING FOR FIRST-TIME CONTRIBUTORS
+  # ============================================
+  greet-contributor:
+    name: Greet First Time Contributors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greet
+        uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-message: |
+            👋 Welcome to Synks!
+
+            Thank you for your first contribution! 🎉
+
+            A maintainer will review your PR soon. In the meantime:
+            - Make sure all checks pass ✅
+            - Review the contribution guidelines
+            - Feel free to ask questions in the comments
+
+            We appreciate your contribution! 🚀

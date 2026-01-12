@@ -21,7 +21,8 @@
       "Bash(npm run build:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(timeout 5 bash:*)"
+      "Bash(timeout 5 bash:*)",
+      "Bash(chmod:*)"
     ]
   }
 }

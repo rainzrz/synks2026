@@ -66,3 +66,24 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Docker
+docker-compose.override.yml
+
+# Backups
+backups/*.tar.gz
+backups/*.sql
+backups/*.dump
+
+# SSL Certificates
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+
+# Monitoring data
+monitoring/grafana/data/
+monitoring/prometheus/data/
+
+# Backup files
+*_old.*
+*.bak

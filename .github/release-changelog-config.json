@@ -1,0 +1,44 @@
+{
+  "categories": [
+    {
+      "title": "## 🚀 Features",
+      "labels": ["feat", "feature", "enhancement"]
+    },
+    {
+      "title": "## 🐛 Bug Fixes",
+      "labels": ["fix", "bugfix", "bug"]
+    },
+    {
+      "title": "## 📚 Documentation",
+      "labels": ["docs", "documentation"]
+    },
+    {
+      "title": "## 🔧 Maintenance",
+      "labels": ["chore", "maintenance", "refactor"]
+    },
+    {
+      "title": "## ⚡ Performance",
+      "labels": ["perf", "performance"]
+    },
+    {
+      "title": "## 🔒 Security",
+      "labels": ["security"]
+    },
+    {
+      "title": "## 🧪 Tests",
+      "labels": ["test", "tests"]
+    },
+    {
+      "title": "## 📦 Dependencies",
+      "labels": ["dependencies"]
+    },
+    {
+      "title": "## 🔨 CI/CD",
+      "labels": ["ci", "cd", "github-actions"]
+    }
+  ],
+  "ignore_labels": [
+    "ignore-for-release"
+  ],
+  "template": "#{{CHANGELOG}}\n\n**Full Changelog**: #{{RELEASE_DIFF}}"
+}
