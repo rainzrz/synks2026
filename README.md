@@ -437,25 +437,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-##  Acknowledgments
-
-- **FastAPI** - Modern Python web framework
-- **React** - UI component library
-- **Docker** - Containerization platform
-- **GitHub Actions** - CI/CD automation
-- **Prometheus & Grafana** - Monitoring stack
-
----
-
-##  Support
-
-- 📧 **Email**: support@synks.app
-- 💬 **Discord**: [Join our community](https://discord.gg/synks)
--  **Issues**: [GitHub Issues](https://github.com/username/synks/issues)
-- 📖 **Wiki**: [Documentation](https://docs.synks.app)
-
----
-
 <div align="center">
 
 **Made by Raian Rodrigues**
